@@ -1,12 +1,12 @@
 
-def decompile(packet: bytes) -> tuple[bytes, list[bytes], bytes]:
+def decompile(packet: bytes) -> tuple[int, bytes, list[bytes], int]:
     """Decompiles the packet and extracts parameters
 
     Args:
         packet (bytes): A packet to be decompiled
 
     Returns:
-        tuple[bytes, list[bytes], bytes]: Decompiled parameters
+        tuple[int, bytes, list[bytes], int]: Decompiled parameters
     """
 
     # Set variables
@@ -21,9 +21,25 @@ def decompile(packet: bytes) -> tuple[bytes, list[bytes], bytes]:
         clk = packet[cursor:cursor+4]
         cursor += 4
 
-    # Decompile devices
-    if flags & 8 > 0:
-        devices = packet[cursor].to_bytes(1, 'big')
+    if self.flags & 2 > 0:
+        paramnum = self.packet[cursor]
         cursor += 1
 
-    return (clk, paramlist, devices)
+        paramlist = []
+        for _ in range(paramnum):
+            paramid = self.packet[cursor]
+            paramsize = self.packet[cursor+1]
+            cursor += 2
+            paramdata = self.packet[cursor:cursor+paramsize]
+            cursor += paramsize
+            parambytes = paramid.to_bytes(1, 'big') + paramsize.to_bytes(1, 'big') + paramdata
+            paramlist.append(parambytes)
+
+        cursor += 1
+
+    # Decompile devices
+    if flags & 8 > 0:
+        devices = packet[cursor]
+        cursor += 1
+
+    return (flags, clk, paramlist, devices)
