@@ -3,7 +3,7 @@ import socket
 PORT = 42069
 
 soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-soc.setblocking(0)
+soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 soc.bind(('0.0.0.0',PORT))
 soc.listen(1)
 
