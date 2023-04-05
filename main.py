@@ -1,11 +1,8 @@
 import threading
 import socket
-import network
+import time
 import decompile_packet as dp
 import sockettransmission_receiver as strev
-
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
 
 def socket_thread() -> None:
     """Socket thread for recieving packets
@@ -26,4 +23,5 @@ thread = threading.Thread(target = socket_thread, args = ())
 thread.start()
 
 while True:
-    pass
+    time.sleep(5)
+    print('Still running')

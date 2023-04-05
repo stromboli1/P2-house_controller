@@ -8,6 +8,7 @@ soc.bind(('0.0.0.0',PORT))
 soc.listen(1)
 
 def receive_packet():
+    print('Ready for accepting')
     c, _ = soc.accept()
     data = c.recv(2048)
     c.close()
