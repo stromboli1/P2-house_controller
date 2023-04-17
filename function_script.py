@@ -31,7 +31,7 @@ def sim_day(dryer_value, oven_value):
         power_consumption = float(dryer) + float(oven)
         power_consumption += bgu.background_usage(i)
         power_consumption = "%.2f" % power_consumption
-        power_consumption = float(power_consumption)/3600
+        power_consumption = float(power_consumption)
         consumption_list.append(float(power_consumption))
     return(consumption_list)
 
@@ -50,7 +50,7 @@ def sim_second(dryer_value, oven_value, time_in_second):
     oven = om.oven(oven_value, time_in_second)
     power_consumption = float(dryer) + float(oven)
     power_consumption += bgu.background_usage(time_in_second)
-    power_consumption = float(power_consumption)/3600
+    power_consumption = float(power_consumption)
     power_consumption = "%.2f" % power_consumption
     return(float(power_consumption))
 
