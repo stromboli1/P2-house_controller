@@ -4,13 +4,13 @@ import socket
 sock: socket.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind(('', 6969))
 
-def recv_broadcast() -> bytes:
+def recv_broadcast() -> int:
     """Receive broadcast signal.
 
     Args:
 
     Returns:
-        bytes: signal
+        int: signal
     """
-    b, _ = sock.recvfrom(256)
-    return b
+    sig, _ = sock.recvfrom(256)[0]
+    return sig
