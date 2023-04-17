@@ -20,7 +20,7 @@ def sim_day(dryer_value, oven_value):
     It takes the average power consumption of the chosen oven and dryer as 
     inputs.
 
-    The output of the function is a list of power consumption, based on the values returned by the dryer model, oven model and background usage model. The list is 86400 data points long, which makes up each second of 24 hours.
+    The output of the function is a list of power consumption, based on the values returned by the dryer model, oven model and background usage model. The list is 86400 data points long, which makes up each second of 24 hours. The output is in kWs.
 
     """
 
@@ -30,8 +30,8 @@ def sim_day(dryer_value, oven_value):
         oven = om.oven(oven_value, i)
         power_consumption = float(dryer) + float(oven)
         power_consumption += bgu.background_usage(i)
-        power_consumption = "%.2f" % power_consumption
-        power_consumption = float(power_consumption)
+        power_consumption = float(power_consumption)/3600
+        power_consumption = "%.6f" % power_consumption
         consumption_list.append(float(power_consumption))
     return(consumption_list)
 
@@ -42,7 +42,9 @@ def sim_second(dryer_value, oven_value, time_in_second):
     It takes the average power consumption of the chosen oven and dryer as 
     inputs.
 
-    The output of the function is the power consumption, based on the values returned by the dryer model, oven model and background usage model.
+    The output of the function is the power consumption, based on the values 
+    returned by the dryer model, oven model and background usage model. 
+    The output is in kWs.
 
     """
 
@@ -50,8 +52,8 @@ def sim_second(dryer_value, oven_value, time_in_second):
     oven = om.oven(oven_value, time_in_second)
     power_consumption = float(dryer) + float(oven)
     power_consumption += bgu.background_usage(time_in_second)
-    power_consumption = float(power_consumption)
-    power_consumption = "%.2f" % power_consumption
+    power_consumption = float(power_consumption)/3600
+    power_consumption = "%.6f" % power_consumption
     return(float(power_consumption))
 
 
@@ -108,7 +110,7 @@ def sim_10_seconds(dryer_value, oven_value, start_time_in_second):
     It takes the average power consumption of a oven and dryer, as well as 
     the start time, which is given in seconds from midnight.
 
-    It returns the sum of the power consumption from the 10 seconds.
+    It returns the sum of the power consumption from the 10 seconds in kWs.
 
     """
     power_consumption = 0
