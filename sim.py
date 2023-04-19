@@ -14,6 +14,7 @@ def heat_pump_time(kwh: float, clock: int, lastclock: int, variance: float) -> f
     Returns:
         float: Powerdraw from heatpump in KWh
     """
+    if 0 > variance or variance > 1: raise ValueError(f"{int(variance * 100)}% is an invalid variance")
     kws = kwh/24/60/60
     dtime = clock-lastclock
     clockdate = datetime.fromtimestamp(clock, tz = pytz.timezone('Europe/Copenhagen'))
