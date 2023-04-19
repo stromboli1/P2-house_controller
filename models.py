@@ -15,13 +15,15 @@ class House():
         'e': (189, 5200)
     }
 
-    def __init__(self: Self,
-        energy_label: str,
-        sq_meters: float,
-        height_meter: float,
-        start_temperature: float,
-        active_days: int
-    ) -> None:
+    def __init__(
+            self: Self,
+            energy_label: str,
+            sq_meters: float,
+            height_meter: float,
+            start_temperature: float,
+            start_time: int,
+            active_days: int
+            ) -> None:
         """Initialize Household.
 
         Args:
@@ -42,6 +44,9 @@ class House():
 
         # Set temperature
         self.current_temperature: float = start_temperature
+
+        # Set the time
+        self.current_time: int = start_time
 
         # Calculate the cubic meters of the house
         self.cubic_meters: float = self.sq_meters * self.height_meter
@@ -161,7 +166,13 @@ class Appliance():
         Raises:
             NotImplementedError: The appliance doesn't have a tick
         """
-        raise NotImplementedError("Tick is not implemented")
+
+        kwh_draw: float = 0
+        if on_state:
+            # TODO: Calculate power draw
+            pass
+
+        return kwh_draw
 
 class Heatpump(Appliance):
 
@@ -188,12 +199,7 @@ class Heatpump(Appliance):
             float: kwh draw
         """
 
-        kwh_draw: float = 0
-        if on_state:
-            # TODO: stuff
-            pass
-
-        return kwh_draw
+        return super().tick(minutes)
 
     def heating(self: Self, minutes: int) -> float:
         """Get the heating effect.
