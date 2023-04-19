@@ -35,12 +35,6 @@ class House:
         self.cubic_meters = sq_meters * wall_height
 
     def heat_loss(self):
-        """ The heat_loss function is used for calculating the 
-        hourly heatloss of a house, based on its energy rating.
-
-        It returns the heat lost in 1 hour.
-
-        """
         if self.energy_label == 'A':
            year = 29+(1000/self.sq_meters)
            hour = year/(365*24)

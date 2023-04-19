@@ -34,6 +34,3 @@ def heat_pump_time(kwh: float, clock: int, lastclock: int, variance: float) -> f
         kws_swing = kws * random.uniform(-variance, variance)
         return (kws+kws_swing)*dtime
     return 0
-
-
-
