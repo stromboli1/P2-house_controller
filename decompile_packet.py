@@ -1,12 +1,17 @@
+import json
+import struct
 
-def decompile(packet: bytes) -> tuple[int, int, list[bytes], int]:
+with open('param_oracle.json', 'r') as fp:
+    param_oracle = json.load(fp)
+
+def decompile(packet: bytes) -> tuple[int, int, dict, int]:
     """Decompiles the packet and extracts parameters
 
     Args:
         packet (bytes): A packet to be decompiled
 
     Returns:
-        tuple[int, bytes, list[bytes], int]: Decompiled parameters
+        tuple[int, int, dict, int]: Decompiled parameters
     """
 
     # Set variables
@@ -22,25 +27,43 @@ def decompile(packet: bytes) -> tuple[int, int, list[bytes], int]:
         cursor += 4
 
     # Decompile parameters
-    if self.flags & 2 > 0:
-        paramnum = self.packet[cursor]
+    if flags & 2 > 0:
+        paramnum = packet[cursor]
         cursor += 1
 
-        paramlist = []
+        paramdict = {}
         for _ in range(paramnum):
-            paramid = self.packet[cursor]
-            paramsize = self.packet[cursor+1]
+            paramid = packet[cursor]
+            paramsize = packet[cursor+1]
             cursor += 2
-            paramdata = self.packet[cursor:cursor+paramsize]
+            paramdata = packet[cursor:cursor+paramsize]
             cursor += paramsize
-            parambytes = paramid.to_bytes(1, 'big') + paramsize.to_bytes(1, 'big') + paramdata
-            paramlist.append(parambytes)
 
-        cursor += 1
+            paramname = ''
+            paramtype = ''
+            for item in param_oracle.items():
+                if item[1]['id'] == paramid:
+                    paramname = item[0]
+                    paramtype = item[1]['type']
+                    break
+
+            match paramtype:
+
+                case 'int':
+                    paramdict[paramname] = int.from_bytes(paramdata, 'big')
+
+                case 'bool':
+                    paramdict[paramname] = paramdata[0] > 0
+
+                case 'float':
+                    paramdict[paramname] = struct.unpack('>d', paramdata)[0]
+
+                case _:
+                    raise ValueError('Invalid type or id not found')
 
     # Decompile devices
     if flags & 8 > 0:
         devices = packet[cursor]
         cursor += 1
 
-    return (flags, clk, paramlist, devices)
+    return (flags, clk, paramdict, devices)
