@@ -1,5 +1,6 @@
 # import modules
 from typing import Self
+import random
 
 # Model of a Household
 class House():
@@ -218,3 +219,257 @@ class Heatpump(Appliance):
             pass
 
         return kwh_heating
+
+class Dryer(Appliance):
+    """Dryer class for simulating a dryer."""
+
+    def __init__(self: Self, power_usage) -> None:
+        """Initialise the dryer.
+
+        Args:
+            self (Self): self
+
+        Returns:
+            None:
+        """
+
+        # The amount of power used by the dryer in one drying cycle.
+        self.power_usage = power_usage
+
+        # Flag indicating whether or not the dryer has been used.
+        self.flag = 0
+
+        # Time at which the dryer_flag was raised.
+        self.flag_time = 0
+
+        # Consumption level from when the flag was raised.
+        self.flag_consumption = 0
+
+        # Amount of time the dryer is turned on.
+        self.cycle_time = random.randint(3400, 7200)
+
+        # Dictionary with chance of the dryer being used.
+        self.dryer_dictionary = {0: 0.02,
+                                1: 0.01,
+                                2: 0.01,
+                                3: 0.01,
+                                4: 0.01,
+                                5: 0.01,
+                                6: 0.03,
+                                7: 0.05,
+                                8: 0.04,
+                                9: 0.03,
+                                10: 0.02,
+                                11: 0.02,
+                                12: 0.02,
+                                13: 0.03,
+                                14: 0.06,
+                                15: 0.15,
+                                16: 0.16,
+                                17: 0.23,
+                                18: 0.32,
+                                19: 0.38,
+                                20: 0.40,
+                                21: 0.30,
+                                22: 0.15,
+                                23: 0.8}
+        
+        super().__init__(controllable=False)
+
+    def check(self, time_of_day: int):
+        """Check if the dryer will be turned on.
+
+        Args:
+            time_of_day (int): The time of day given in seconds.
+        """
+        on_chance_level = self.dryer_dictionary[(time_of_day//3600)]
+
+        # The dryer check only happens once per hour (at random).
+        chance_per_hour = random.randint(0,3600)
+        on_chance = random.random()
+
+        if chance_per_hour == 0 and on_chance <= on_chance_level and self.flag == 0:
+            return 1
+        elif self.flag == 1:
+            return 2
+        else:
+            return 0
+
+    def consumption_calc(self, time_of_day: int):
+        """Calculate the consumption if dryer is used.
+
+        Args:
+            time_of_day (int): Time of day in seconds.
+        """
+        consumption = float(self.power_usage)
+        fluctuation = float(random.randint(-2, 5)/100)
+        consumption += fluctuation
+        self.flag = 1
+        self.flag_time = time_of_day
+        self.flag_consumption = consumption
+        return consumption
+
+    def tick(self: Self, minutes: int, time_of_day: int) -> float:
+        """Tick the dryer and get the kwh draw.
+
+        Args:
+            self (Self): self
+            minutes (int): duration of the tick
+            time_of_day (int): Time of day in seconds
+
+        Returns:
+            float: kwh draw
+        """
+        
+        tick_consumption = 0
+
+        for seconds in range(int(minutes*60)):
+            check_sum = self.check(time_of_day+seconds)
+            if check_sum == 0:
+                tick_consumption += 0
+            elif check_sum == 1:
+                tick_consumption += self.consumption_calc(time_of_day+seconds)
+            elif check_sum == 2:
+                flag_time_diff = (time_of_day + seconds) - self.flag_time
+                if flag_time_diff < self.cycle_time:
+                    return self.flag_consumption
+                else:
+                    return(0)
+
+        if tick_consumption > 0:
+            tick_consumption = tick_consumption/(minutes*60)
+        
+        return tick_consumption
+
+    def reset(self):
+        self.flag = 0
+        self.flag_consumption = 0
+        self.flag_time = 0
+        self.cycle_time = random.randint(3400,7200)
+
+class Oven(Appliance):
+    """Oven class for simulating a oven."""
+
+    def __init__(self: Self, power_usage) -> None:
+        """Initialise the oven.
+
+        Args:
+            self (Self): self
+
+        Returns:
+            None:
+        """
+
+        # The amount of power used by the oven in one cycle.
+        self.power_usage = power_usage
+
+        # Flag indicating whether or not the dryer has been used.
+        self.flag = 0
+
+        # Time at which the flag was raised.
+        self.flag_time = 0
+
+        # Consumption level from when the flag was raised.
+        self.flag_consumption = 0
+
+        # Amount of time the oven is turned on.
+        self.cycle_time = random.randint(3400, 7200)
+
+        # Dictionary with chance of the dryer being used.
+        self.oven_dictionary = {0: 0.02,
+                                1: 0.01,
+                                2: 0.01,
+                                3: 0.01,
+                                4: 0.01,
+                                5: 0.01,
+                                6: 0.03,
+                                7: 0.05,
+                                8: 0.04,
+                                9: 0.03,
+                                10: 0.02,
+                                11: 0.02,
+                                12: 0.02,
+                                13: 0.03,
+                                14: 0.06,
+                                15: 0.15,
+                                16: 0.16,
+                                17: 0.23,
+                                18: 0.32,
+                                19: 0.38,
+                                20: 0.40,
+                                21: 0.30,
+                                22: 0.15,
+                                23: 0.8}
+        
+        super().__init__(controllable=False)
+
+    def check(self, time_of_day: int):
+        """Check if the oven will be turned on.
+
+        Args:
+            time_of_day (int): The time of day given in seconds.
+        """
+        on_chance_level = self.oven_dictionary[(time_of_day//3600)]
+
+        # The dryer check only happens once per hour (at random).
+        chance_per_hour = random.randint(0,3600)
+        on_chance = random.random()
+
+        if chance_per_hour == 0 and on_chance <= on_chance_level and self.flag == 0:
+            return 1
+        elif self.flag == 1:
+            return 2
+        else:
+            return 0
+
+    def consumption_calc(self, time_of_day: int):
+        """Calculate the consumption if oven is used.
+
+        Args:
+            time_of_day (int): Time of day in seconds.
+        """
+        consumption = float(self.power_usage)
+        fluctuation = float(random.randint(-2, 5)/100)
+        consumption += fluctuation
+        self.flag = 1
+        self.flag_time = time_of_day
+        self.flag_consumption = consumption
+        return consumption
+
+    def tick(self: Self, minutes: int, time_of_day: int) -> float:
+        """Tick the oven and get the kwh draw.
+
+        Args:
+            self (Self): self
+            minutes (int): duration of the tick
+            time_of_day (int): Time of day in seconds
+
+        Returns:
+            float: kwh draw
+        """
+        
+        tick_consumption = 0
+
+        for seconds in range(int(minutes*60)):
+            check_sum = self.check(time_of_day+seconds)
+            if check_sum == 0:
+                tick_consumption += 0
+            elif check_sum == 1:
+                tick_consumption += self.consumption_calc(time_of_day+seconds)
+            elif check_sum == 2:
+                flag_time_diff = (time_of_day + seconds) - self.flag_time
+                if flag_time_diff < self.cycle_time:
+                    return self.flag_consumption
+                else:
+                    return(0)
+
+        if tick_consumption > 0:
+            tick_consumption = tick_consumption/(minutes*60)
+        
+        return tick_consumption
+
+    def reset(self):
+        self.flag = 0
+        self.flag_consumption = 0
+        self.flag_time = 0
+        self.cycle_time = random.randint(3600,7200)
