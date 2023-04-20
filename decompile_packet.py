@@ -1,5 +1,5 @@
 
-def decompile(packet: bytes) -> tuple[int, bytes, list[bytes], int]:
+def decompile(packet: bytes) -> tuple[int, int, list[bytes], int]:
     """Decompiles the packet and extracts parameters
 
     Args:
@@ -18,9 +18,10 @@ def decompile(packet: bytes) -> tuple[int, bytes, list[bytes], int]:
 
     # Decompile clock sync
     if flags & 1 > 0:
-        clk = packet[cursor:cursor+4]
+        clk = int.from_bytes(packet[cursor:cursor+4], 'big')
         cursor += 4
 
+    # Decompile parameters
     if self.flags & 2 > 0:
         paramnum = self.packet[cursor]
         cursor += 1
