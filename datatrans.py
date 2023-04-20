@@ -26,8 +26,8 @@ def send_data_packet(devices: int, powerusage: float, temperature: float, time: 
 
     # Add data to the packet
     packet += devices.to_bytes(1, 'big')
-    packet += struct.pack('f', powerusage)
-    packet += struct.pack('f', temperature)
+    packet += struct.pack('>f', powerusage)
+    packet += struct.pack('>f', temperature)
     packet += time.to_bytes(4, 'big')
 
     # Send the packet
