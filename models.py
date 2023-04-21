@@ -67,8 +67,8 @@ class House():
             raise ValueError("Energy Label is invalid")
 
         self.limit_value: tuple[int, int] = self.LIMIT_VALUES.get(self.energy_label)
-
-    def _kj2celsius(kj: float) -> float:
+        
+    def _kj2celsius(self, kj: float) -> float:
         """Convert kj to celsius.
 
         Args:
@@ -78,7 +78,7 @@ class House():
             float: celsius
         """
 
-        return kj*(1.005 * (self.kg_air))
+        return kj*(1.005 * self.kg_air)
 
     def calculate_heat_loss(self: Self, minutes: int) -> float:
         """Calculate the total heatloss in the given minute interval.
@@ -234,8 +234,8 @@ class Heatpump(Appliance):
             float: kwh draw
         """
 
-        kws_swing = self.kwh_min * random.uniform(-self.variance, self.variance)
-        self.kwh_used = (self.kwh_min + kws_swing)*minutes
+        kws_swing = self.kwh_min * self.rng.uniform(-self.variance, self.variance)
+        kwh_used = (self.kwh_min + kws_swing)*minutes
 
         #check if the heatpump has been on
         if  heating.temp <= 19:
@@ -254,12 +254,12 @@ class Heatpump(Appliance):
             float: effect in kwh
         """
         kj_gain: float = self.kwh_used
-        cellsiuscellsius_gain = self._kj2celsius(kj_gain)
+        celsius_gain = self._kj2celsius(kj_gain)
         if self.on_state:
             # TODO: stuff
             pass
 
-        return cellsius_gain 
+        return celsius_gain 
 
 class Dryer(Appliance):
     """Dryer class for simulating a dryer."""
@@ -287,7 +287,7 @@ class Dryer(Appliance):
         self.flag_consumption = 0
 
         # Amount of time the dryer is turned on.
-        self.cycle_time = random.randint(3400, 7200)
+        self.cycle_time = self.rng.integers(3400, 7200)
 
         # Dictionary with chance of the dryer being used.
         self.dryer_dictionary = {0: 0.02,
@@ -326,8 +326,8 @@ class Dryer(Appliance):
         on_chance_level = self.dryer_dictionary[(time_of_day//3600)]
 
         # The dryer check only happens once per hour (at random).
-        chance_per_hour = random.randint(0,3600)
-        on_chance = random.random()
+        chance_per_hour = self.rng.integers(0,3600)
+        on_chance = self.rng.random()
 
         if chance_per_hour == 0 and on_chance <= on_chance_level and self.flag == 0:
             return 1
@@ -343,7 +343,7 @@ class Dryer(Appliance):
             time_of_day (int): Time of day in seconds.
         """
         consumption = float(self.power_usage)
-        fluctuation = float(random.randint(-2, 5)/100)
+        fluctuation = float(self.rng.integers(-2, 5)/100)
         consumption += fluctuation
         self.flag = 1
         self.flag_time = time_of_day
@@ -388,7 +388,7 @@ class Dryer(Appliance):
         self.flag = 0
         self.flag_consumption = 0
         self.flag_time = 0
-        self.cycle_time = random.randint(3400,7200)
+        self.cycle_time = self.rng.integers(3400,7200)
 
 class Oven(Appliance):
     """Oven class for simulating a oven."""
@@ -416,7 +416,7 @@ class Oven(Appliance):
         self.flag_consumption = 0
 
         # Amount of time the oven is turned on.
-        self.cycle_time = random.randint(3400, 7200)
+        self.cycle_time = self.rng.integers(3400, 7200)
 
         # Dictionary with chance of the oven being used.
         self.oven_dictionary = {0: 0.03,
@@ -455,8 +455,8 @@ class Oven(Appliance):
         on_chance_level = self.oven_dictionary[(time_of_day//3600)]
 
         # The oven check only happens once per hour (at random).
-        chance_per_hour = random.randint(0,3600)
-        on_chance = random.random()
+        chance_per_hour = self.rng.integers(0,3600)
+        on_chance = self.rng.random()
 
         if chance_per_hour == 0 and on_chance <= on_chance_level and self.flag == 0:
             return 1
@@ -472,7 +472,7 @@ class Oven(Appliance):
             time_of_day (int): Time of day in seconds.
         """
         consumption = float(self.power_usage)
-        fluctuation = float(random.randint(-2, 5)/100)
+        fluctuation = float(self.rng.integers(-2, 5)/100)
         consumption += fluctuation
         self.flag = 1
         self.flag_time = time_of_day
@@ -517,7 +517,7 @@ class Oven(Appliance):
         self.flag = 0
         self.flag_consumption = 0
         self.flag_time = 0
-        self.cycle_time = random.randint(3600,7200)
+        self.cycle_time = self.rng.integers(3600,7200)
 
 class background_power_consumption(Appliance):
     """Used for simulating background power consumption."""
@@ -574,7 +574,7 @@ class background_power_consumption(Appliance):
         """
         tick_consumption = 0
         for seconds in range(minutes*60):
-            tick_consumption += random.uniform(-0.05, 0.05)
+            tick_consumption += self.rng.uniform(-0.05, 0.05)
             time = time_of_day+seconds
             tick_consumption += self.background_dict[(time)//3600]
         return tick_consumption/60
