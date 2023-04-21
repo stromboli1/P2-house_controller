@@ -31,22 +31,34 @@ def decompile(packet: bytes) -> tuple[int, int, dict, int]:
         paramnum = packet[cursor]
         cursor += 1
 
+        # Make dictionary to hold the parameters
         paramdict = {}
+
+        # Loop over all parameters
         for _ in range(paramnum):
+
+            # Extract param id and param size
             paramid = packet[cursor]
             paramsize = packet[cursor+1]
             cursor += 2
+
+            # Extract param data
             paramdata = packet[cursor:cursor+paramsize]
             cursor += paramsize
 
+            # Make variables to hold param name and param type
             paramname = ''
             paramtype = ''
+
+            # Find the parameter in param oracle
+            # and set the name and type
             for item in param_oracle.items():
                 if item[1]['id'] == paramid:
                     paramname = item[0]
                     paramtype = item[1]['type']
                     break
 
+            # Match on the param type and convert the data
             match paramtype:
 
                 case 'int':
