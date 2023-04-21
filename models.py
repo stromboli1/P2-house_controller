@@ -1,6 +1,8 @@
 # import modules
-from typing import Self
-import random
+from typing import Self, Type
+from datetime import datetime
+from numpy.polynomial.polynomial import polyval
+from numpy.random import default_rng, Generator
 
 # Model of a Household
 class House():
@@ -140,9 +142,10 @@ class House():
 class Appliance():
 
     # The state of the appliance
-    on_state: bool = False
+    power_state: bool = False
+    power_lock: bool = False
 
-    def __init__(self: Self, controllable: bool) -> None:
+    def __init__(self: Self, controllable: bool, state_coeffs: list[float]) -> None:
         """Initialize the appliance.
 
         Args:
@@ -154,22 +157,36 @@ class Appliance():
         """
 
         self.controllable: bool = controllable
+        self.state_coeffs: list[float] = state_coeffs
+        self.rng: Generator = default_rng()
 
-    def tick(self: Self, minutes: int) -> float:
-        """Tick the appliance and get the kwh draw.
+    def calculate_state(self: Self, date: datetime) -> None:
+
+        # Check
+        if self.controllable and self.power_lock:
+            self.power_state = False
+        else:
+            # Calculate the point to sample
+            sample_point: float = date.hour + (date.minute/60)
+
+            # Check if the device needs to be turned on
+            self.power_state = self.rng.uniform() <= polyval(sample_point, self.state_coeffs)
+
+    def tick(self: Self, minutes: int, date: datetime) -> tuple[bool, float]:
+        """Tick the appliance and get the state and kwh draw.
 
         Args:
             self (Self): self
             minutes (int): duration of tick.
 
         Returns:
-            float: kwh draw
-        Raises:
-            NotImplementedError: The appliance doesn't have a tick
+            tuple[bool, float]: state and kwh draw
         """
 
+        self.calculate_state(date)
+
         kwh_draw: float = 0
-        if self.on_state:
+        if self.power_state:
             # TODO: Calculate power draw
             pass
 
