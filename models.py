@@ -25,7 +25,8 @@ class House():
             height_meter: float,
             start_temperature: float,
             start_time: int,
-            active_days: int
+            active_days: int,
+            appliances: list[Type[Appliance]]
             ) -> None:
         """Initialize Household.
 
@@ -34,6 +35,10 @@ class House():
             energy_label (str): The energy label of the house
             sq_meters (float): The square meters floor space
             height_meter (float): The height of the walls
+            start_temperature (float): The starting temperature
+            start_time (int): The starting time in unix time
+            active_days (int): The days that the house is active
+            appliances (Type[Appliance]): The appliances of the house
 
         Returns:
             None:
@@ -44,6 +49,7 @@ class House():
         self.sq_meters: float = sq_meters
         self.height_meter: float = height_meter
         self.active_days: int = active_days
+        self.appliances: list[Type[Appliance]]
 
         # Set temperature
         self.current_temperature: float = start_temperature
@@ -145,12 +151,17 @@ class Appliance():
     power_state: bool = False
     power_lock: bool = False
 
-    def __init__(self: Self, controllable: bool, state_coeffs: list[float]) -> None:
+    def __init__(
+            self: Self,
+            controllable: bool,
+            state_coeffs: list[float]
+            ) -> None:
         """Initialize the appliance.
 
         Args:
             self (Self): self
             controllable (bool): Is the appliance controllable
+            state_coeffs (list[float]): The coefficients of the state over time polynomial
 
         Returns:
             None:
@@ -162,7 +173,7 @@ class Appliance():
 
     def calculate_state(self: Self, date: datetime) -> None:
 
-        # Check
+        # Check if the appliance is controlled and locked
         if self.controllable and self.power_lock:
             self.power_state = False
         else:
@@ -212,7 +223,7 @@ class Heatpump(Appliance):
 
         super().__init__(controllable=True)
 
-    def tick(self: Self, minutes: int) -> float:
+    def tick(self: Self, minutes: int, date: datetime, temperature: float) -> float:
         """Tick the heatpump and get the kwh draw.
 
         Args:
@@ -222,7 +233,7 @@ class Heatpump(Appliance):
         Returns:
             float: kwh draw
         """
-        
+
         kws_swing = self.kwh_min * random.uniform(-self.variance, self.variance)
         self.kwh_used = (self.kwh_min + kws_swing)*minutes
 
@@ -303,7 +314,7 @@ class Dryer(Appliance):
                                 21: 0.30,
                                 22: 0.15,
                                 23: 0.08}
-        
+
         super().__init__(controllable=False)
 
     def check(self, time_of_day: int):
@@ -350,7 +361,7 @@ class Dryer(Appliance):
         Returns:
             float: kwh draw
         """
-        
+
         tick_consumption = 0
 
         for seconds in range(int(minutes*60)):
@@ -368,7 +379,7 @@ class Dryer(Appliance):
 
         if tick_consumption > 0:
             tick_consumption = tick_consumption/(minutes*60)
-        
+
         return tick_consumption
 
     def reset(self):
@@ -432,7 +443,7 @@ class Oven(Appliance):
                                 21: 0.08,
                                 22: 0.06,
                                 23: 0.04}
-        
+
         super().__init__(controllable=False)
 
     def check(self, time_of_day: int):
@@ -479,7 +490,7 @@ class Oven(Appliance):
         Returns:
             float: kwh draw
         """
-        
+
         tick_consumption = 0
 
         for seconds in range(int(minutes*60)):
@@ -497,7 +508,7 @@ class Oven(Appliance):
 
         if tick_consumption > 0:
             tick_consumption = tick_consumption/(minutes*60)
-        
+
         return tick_consumption
 
     def reset(self):
@@ -547,7 +558,7 @@ class background_power_consumption(Appliance):
                                 21: 0.45,
                                 22: 0.40,
                                 23: 0.30}
-        
+
         super().__init__(controllable=False)
 
     def tick(self, minutes:int, time_of_day: int):
