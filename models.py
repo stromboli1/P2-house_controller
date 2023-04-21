@@ -1,6 +1,6 @@
-# import modules
+# Import modules
 from typing import Self, Type
-from datetime import datetime
+from datetime import datetime, timedelta
 from numpy.polynomial.polynomial import polyval
 from numpy.random import default_rng, Generator
 
@@ -147,14 +147,29 @@ class House():
 
 class Appliance():
 
+    # TODO List:
+    #
+    # Make a generised power usage calculation
+    # Make variables reset between days
+    #
+    # Make all subclasses use the newly general functions
+
     # The state of the appliance
     power_state: bool = False
-    power_lock: bool = False
+    _power_lock: bool = False
+
+    # Datetime object to track the start of a cycle
+    cycle_end_time: Optional[datetime] = None
+
+    # Keep track of how many times the appliance has been cycled
+    cycle_count: int = 0
 
     def __init__(
             self: Self,
             controllable: bool,
-            state_coeffs: list[float]
+            state_coeffs: list[float],
+            allowed_cycles: int,
+            cycle_time_range: tuple[int, int]
             ) -> None:
         """Initialize the appliance.
 
@@ -162,6 +177,8 @@ class Appliance():
             self (Self): self
             controllable (bool): Is the appliance controllable
             state_coeffs (list[float]): The coefficients of the state over time polynomial
+            allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
+            cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
 
         Returns:
             None:
@@ -169,19 +186,50 @@ class Appliance():
 
         self.controllable: bool = controllable
         self.state_coeffs: list[float] = state_coeffs
-        self.rng: Generator = default_rng()
+        self.allowed_cycles: int = allowed_cycles
+        self.cycle_time_range: tuple[int, int] = cycle_time_range
+
+        # Make a randomness generator
+        self._rng: Generator = default_rng()
+
+    def power_locker(self: Self, lock: bool) -> None:
+        if not self.controllable:
+            raise RuntimeWarning("Appliance is not controllable")
+            return
+
+        self._power_lock: bool = lock
+        if self._power_lock:
+            self.power_state: bool = False
 
     def calculate_state(self: Self, date: datetime) -> None:
 
-        # Check if the appliance is controlled and locked
-        if self.controllable and self.power_lock:
-            self.power_state = False
+        # Check if we are already in a cycle
+        if date < self.cycle_end_time:
+            # Check if it is locked, dont do anything
+            if self._power_lock:
+                return
+
+            self.power_state: bool = True
+            return
         else:
-            # Calculate the point to sample
+            # Turn it off if it isnt in a cycle
+            self.power_state: bool = False
+
+        # Check if it should be turned on
+        if not self.power_state:
+            # Make sure that it has more allowed cycles
+            if self.cycle_count < self.allowed_cycles and not self.allowed_cycles <= 0:
+                return
+
+            # Sample a probability polynomial
             sample_point: float = date.hour + (date.minute/60)
 
-            # Check if the device needs to be turned on
-            self.power_state = self.rng.uniform() <= polyval(sample_point, self.state_coeffs)
+            if self._rng.uniform() <= polyval(sample_point, self.state_coeffs):
+                self.power_state: bool = True
+                self.cycle_count += 1
+                self.cycle_end_time: datetime = date + \
+                        timedelta(minutes=self._rng.integers(
+                            self.cycle_time_range[0], self.cycle_time_range[1]))
 
     def tick(self: Self, minutes: int, date: datetime) -> tuple[bool, float]:
         """Tick the appliance and get the state and kwh draw.
@@ -277,44 +325,7 @@ class Dryer(Appliance):
         # The amount of power used by the dryer in one drying cycle.
         self.power_usage = power_usage
 
-        # Flag indicating whether or not the dryer has been used.
-        self.flag = 0
-
-        # Time at which the dryer_flag was raised.
-        self.flag_time = 0
-
-        # Consumption level from when the flag was raised.
-        self.flag_consumption = 0
-
-        # Amount of time the dryer is turned on.
-        self.cycle_time = self.rng.integers(3400, 7200)
-
-        # Dictionary with chance of the dryer being used.
-        self.dryer_dictionary = {0: 0.02,
-                                1: 0.01,
-                                2: 0.01,
-                                3: 0.01,
-                                4: 0.01,
-                                5: 0.01,
-                                6: 0.03,
-                                7: 0.05,
-                                8: 0.04,
-                                9: 0.03,
-                                10: 0.02,
-                                11: 0.02,
-                                12: 0.02,
-                                13: 0.03,
-                                14: 0.06,
-                                15: 0.15,
-                                16: 0.16,
-                                17: 0.23,
-                                18: 0.32,
-                                19: 0.38,
-                                20: 0.40,
-                                21: 0.30,
-                                22: 0.15,
-                                23: 0.08}
-
+        
         super().__init__(controllable=False)
 
     def check(self, time_of_day: int):
@@ -364,19 +375,7 @@ class Dryer(Appliance):
 
         tick_consumption = 0
 
-        for seconds in range(int(minutes*60)):
-            check_sum = self.check(time_of_day+seconds)
-            if check_sum == 0:
-                tick_consumption += 0
-            elif check_sum == 1:
-                tick_consumption += self.consumption_calc(time_of_day+seconds)
-            elif check_sum == 2:
-                flag_time_diff = (time_of_day + seconds) - self.flag_time
-                if flag_time_diff < self.cycle_time:
-                    return self.flag_consumption
-                else:
-                    return(0)
-
+        f
         if tick_consumption > 0:
             tick_consumption = tick_consumption/(minutes*60)
 
@@ -407,43 +406,7 @@ class Oven(Appliance):
         self.power_usage = power_usage
 
         # Flag indicating whether or not the dryer has been used.
-        self.flag = 0
-
-        # Time at which the flag was raised.
-        self.flag_time = 0
-
-        # Consumption level from when the flag was raised.
-        self.flag_consumption = 0
-
-        # Amount of time the oven is turned on.
-        self.cycle_time = self.rng.integers(3400, 7200)
-
-        # Dictionary with chance of the oven being used.
-        self.oven_dictionary = {0: 0.03,
-                                1: 0.02,
-                                2: 0.02,
-                                3: 0.02,
-                                4: 0.03,
-                                5: 0.04,
-                                6: 0.05,
-                                7: 0.07,
-                                8: 0.06,
-                                9: 0.02,
-                                10: 0.02,
-                                11: 0.02,
-                                12: 0.02,
-                                13: 0.04,
-                                14: 0.06,
-                                15: 0.15,
-                                16: 0.30,
-                                17: 0.35,
-                                18: 0.30,
-                                19: 0.30,
-                                20: 0.10,
-                                21: 0.08,
-                                22: 0.06,
-                                23: 0.04}
-
+        
         super().__init__(controllable=False)
 
     def check(self, time_of_day: int):
@@ -491,21 +454,7 @@ class Oven(Appliance):
             float: kwh draw
         """
 
-        tick_consumption = 0
-
-        for seconds in range(int(minutes*60)):
-            check_sum = self.check(time_of_day+seconds)
-            if check_sum == 0:
-                tick_consumption += 0
-            elif check_sum == 1:
-                tick_consumption += self.consumption_calc(time_of_day+seconds)
-            elif check_sum == 2:
-                flag_time_diff = (time_of_day + seconds) - self.flag_time
-                if flag_time_diff < self.cycle_time:
-                    return self.flag_consumption
-                else:
-                    return(0)
-
+        
         if tick_consumption > 0:
             tick_consumption = tick_consumption/(minutes*60)
 
