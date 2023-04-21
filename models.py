@@ -342,6 +342,8 @@ class Dryer(Appliance):
         return tick_consumption
 
     def reset(self):
+        """Resets key variables. Should be used when a new day starts."""
+        
         self.flag = 0
         self.flag_consumption = 0
         self.flag_time = 0
@@ -375,7 +377,7 @@ class Oven(Appliance):
         # Amount of time the oven is turned on.
         self.cycle_time = random.randint(3400, 7200)
 
-        # Dictionary with chance of the dryer being used.
+        # Dictionary with chance of the oven being used.
         self.oven_dictionary = {0: 0.02,
                                 1: 0.01,
                                 2: 0.01,
@@ -411,7 +413,7 @@ class Oven(Appliance):
         """
         on_chance_level = self.oven_dictionary[(time_of_day//3600)]
 
-        # The dryer check only happens once per hour (at random).
+        # The oven check only happens once per hour (at random).
         chance_per_hour = random.randint(0,3600)
         on_chance = random.random()
 
@@ -469,7 +471,69 @@ class Oven(Appliance):
         return tick_consumption
 
     def reset(self):
+        """Resets key variables. Should be used when a new day starts."""
+
         self.flag = 0
         self.flag_consumption = 0
         self.flag_time = 0
         self.cycle_time = random.randint(3600,7200)
+
+class background_power_consumption(Appliance):
+    """Used for simulating background power consumption."""
+
+    def __init__(self: Self, power_usage) -> None:
+        """Initialise background power consumption.
+
+        Args:
+            self (Self): self
+
+        Returns:
+            None:
+        """
+
+
+        # Dictionary with level of background power being used.
+        self.background_dict = {0: 0.30,
+                                1: 0.30,
+                                2: 0.30,
+                                3: 0.30,
+                                4: 0.30,
+                                5: 0.30,
+                                6: 0.32,
+                                7: 0.36,
+                                8: 0.38,
+                                9: 0.35,
+                                10: 0.32,
+                                11: 0.32,
+                                12: 0.35,
+                                13: 0.38,
+                                14: 0.38,
+                                15: 0.40,
+                                16: 0.45,
+                                17: 0.48,
+                                18: 0.51,
+                                19: 0.51,
+                                20: 0.51,
+                                21: 0.45,
+                                22: 0.40,
+                                23: 0.30}
+        
+        super().__init__(controllable=False)
+
+    def tick(self, minutes:int, time_of_day: int):
+        """Tick the background power consumption and get the kwh draw.
+
+        Args:
+            self (Self): self
+            minutes (int): duration of the tick
+            time_of_day (int): Time of day in seconds
+
+        Returns:
+            float: kwh draw
+        """
+        tick_consumption = 0
+        for seconds in range(minutes*60):
+            tick_consumption += random.uniform(-0.05, 0.05)
+            time = time_of_day+seconds
+            tick_consumption += self.background_dict[(time)//3600]
+        return tick_consumption
