@@ -142,7 +142,9 @@ class Appliance():
     # The state of the appliance
     on_state: bool = False
 
-    def __init__(self: Self, controllable: bool) -> None:
+    def __init__(self: Self, 
+                 controllable: bool,
+                 ) -> None:
         """Initialize the appliance.
 
         Args:
@@ -177,7 +179,10 @@ class Appliance():
 
 class Heatpump(Appliance):
 
-    def __init__(self: Self) -> None:
+    def __init__(self: Self,
+                 averkwh: float,
+                 variance: float,
+                 ) -> None:
         """Initiazalize the heatpump.
 
         Args:
@@ -186,6 +191,9 @@ class Heatpump(Appliance):
         Returns:
             None:
         """
+        self.variables: float = variance
+        self.averkwh: float = averkwh
+        self.kwh_min: float = self.averkwh/24/60
 
         super().__init__(controllable=True)
 
@@ -199,8 +207,15 @@ class Heatpump(Appliance):
         Returns:
             float: kwh draw
         """
+        
+        kws_swing = self.kwh_min * random.uniform(-self.variance, self.variance)
+        self.kwh_used = (self.kwh_min + kws_swing)*minutes
 
-        return super().tick(minutes)
+        #check if the heatpump has been on
+        if  heating.temp <= 19:
+            return self.kwh_used
+
+        return super().tick(minutes), kwh_used
 
     def heating(self: Self, minutes: int) -> float:
         """Get the heating effect.
@@ -212,13 +227,13 @@ class Heatpump(Appliance):
         Returns:
             float: effect in kwh
         """
-
-        kwh_heating: float = 0
+        kj_gain: float = self.kwh_used
+        cellsiuscellsius_gain = self._kj2celsius(kj_gain)
         if self.on_state:
             # TODO: stuff
             pass
 
-        return kwh_heating
+        return cellsius_gain 
 
 class Dryer(Appliance):
     """Dryer class for simulating a dryer."""
