@@ -272,7 +272,7 @@ class Dryer(Appliance):
                                 20: 0.40,
                                 21: 0.30,
                                 22: 0.15,
-                                23: 0.8}
+                                23: 0.08}
         
         super().__init__(controllable=False)
 
@@ -343,7 +343,7 @@ class Dryer(Appliance):
 
     def reset(self):
         """Resets key variables. Should be used when a new day starts."""
-        
+
         self.flag = 0
         self.flag_consumption = 0
         self.flag_time = 0
@@ -378,30 +378,30 @@ class Oven(Appliance):
         self.cycle_time = random.randint(3400, 7200)
 
         # Dictionary with chance of the oven being used.
-        self.oven_dictionary = {0: 0.02,
-                                1: 0.01,
-                                2: 0.01,
-                                3: 0.01,
-                                4: 0.01,
-                                5: 0.01,
-                                6: 0.03,
-                                7: 0.05,
-                                8: 0.04,
-                                9: 0.03,
+        self.oven_dictionary = {0: 0.03,
+                                1: 0.02,
+                                2: 0.02,
+                                3: 0.02,
+                                4: 0.03,
+                                5: 0.04,
+                                6: 0.05,
+                                7: 0.07,
+                                8: 0.06,
+                                9: 0.02,
                                 10: 0.02,
                                 11: 0.02,
                                 12: 0.02,
-                                13: 0.03,
+                                13: 0.04,
                                 14: 0.06,
                                 15: 0.15,
-                                16: 0.16,
-                                17: 0.23,
-                                18: 0.32,
-                                19: 0.38,
-                                20: 0.40,
-                                21: 0.30,
-                                22: 0.15,
-                                23: 0.8}
+                                16: 0.30,
+                                17: 0.35,
+                                18: 0.30,
+                                19: 0.30,
+                                20: 0.10,
+                                21: 0.08,
+                                22: 0.06,
+                                23: 0.04}
         
         super().__init__(controllable=False)
 
