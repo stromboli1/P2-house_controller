@@ -70,7 +70,7 @@ class House():
             float: celsius
         """
 
-        return kj*(1.005*self.kg_air)
+        return kj*(1.005 * (self.kg_air))
 
     def calculate_heat_loss(self: Self, minutes: int) -> float:
         """Calculate the total heatloss in the given minute interval.
@@ -169,7 +169,7 @@ class Appliance():
         """
 
         kwh_draw: float = 0
-        if on_state:
+        if self.on_state:
             # TODO: Calculate power draw
             pass
 
@@ -214,7 +214,7 @@ class Heatpump(Appliance):
         """
 
         kwh_heating: float = 0
-        if on_state:
+        if self.on_state:
             # TODO: stuff
             pass
 
@@ -481,7 +481,7 @@ class Oven(Appliance):
 class background_power_consumption(Appliance):
     """Used for simulating background power consumption."""
 
-    def __init__(self: Self, power_usage) -> None:
+    def __init__(self: Self) -> None:
         """Initialise background power consumption.
 
         Args:
@@ -536,4 +536,4 @@ class background_power_consumption(Appliance):
             tick_consumption += random.uniform(-0.05, 0.05)
             time = time_of_day+seconds
             tick_consumption += self.background_dict[(time)//3600]
-        return tick_consumption
+        return tick_consumption/60
