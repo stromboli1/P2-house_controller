@@ -5,6 +5,13 @@ from numpy.polynomial.polynomial import polyval
 from numpy.random import default_rng, Generator
 from numpy import linspace
 
+# TODO:
+#
+# * Add some way for the time to run along
+#   * Per tick or Continuos?
+# * Calculate polynomials for all appliances
+#   * In a config file or over the control protocol
+
 # Base Model of an Appliance
 class Appliance():
 
@@ -42,6 +49,7 @@ class Appliance():
             None:
         """
 
+        # Set given parameters
         self.controllable: bool = controllable
         self._power_usage: float = power_usage
         self._power_fluctuation: float = power_fluctuation
@@ -63,12 +71,25 @@ class Appliance():
         Returns:
             float: minutes
         """
+
         return (date1 - date2).total_seconds()/60.0
 
     def power_locker(self: Self, lock: bool) -> None:
+        """Lock (or unlock) the power on the appliance.
+
+        Args:
+            self (Self): self
+            lock (bool): lock or unlock
+
+        Returns:
+            None:
+        """
+
+        # Check if we are able to control the appliance
         if not self.controllable:
             raise RuntimeWarning("Appliance is not controllable")
 
+        # Lock the appliance
         self._power_lock: bool = lock
         if self._power_lock:
             self.power_state: bool = False
@@ -139,6 +160,7 @@ class Appliance():
         if last_tick.date() < date.date():
             self._reset_variables()
 
+        # Calculate the power state
         self._calculate_state(date)
 
         kwh_draw: float = 0.0
@@ -400,6 +422,7 @@ class House():
         Returns:
             float: minutes
         """
+
         return (date1 - date2).total_seconds()/60.0
 
     def _calculate_heat_loss(self: Self) -> float:
@@ -490,6 +513,9 @@ class House():
         # Add the background power to the total power draw
         total_kwh_draw += sum(polyval(sample_points, self._bg_power_coeffs)) * \
                 (1 + self._rng.uniform(-self._bg_power_fluctuation, self._bg_power_fluctuation))
+
+        # Update the last_tick date
+        self.last_tick: datetime = self.date
 
         return power_states, total_kwh_draw, self.current_temperature
 
