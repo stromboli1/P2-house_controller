@@ -428,7 +428,7 @@ class House():
 
         return (date1 - date2).total_seconds()/60.0
 
-    def _calculate_heat_loss(self: Self) -> float:
+    def _calculate_heat_loss(self: Self, minutes: float) -> float:
         """Calculate the total heatloss in the given minute interval.
 
         Args:
@@ -508,7 +508,7 @@ class House():
 
         # Calculate the new temperature
         self.current_temperature += self._calculate_heat_gain(total_heating_kwh) - \
-            self._calculate_heat_loss()
+            self._calculate_heat_loss(minutes)
 
         # Get sample points for background power
         sample_points: list[float] = linspace(
