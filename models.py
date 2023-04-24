@@ -488,6 +488,19 @@ class House():
 
         self.date += timedelta(seconds=delta_time)
 
+    def set_time(self: Self, unix_time: int) -> None:
+        """Set the time on the house.
+
+        Args:
+            self (Self): self
+            unix_time (int): New time in unix format
+
+        Returns:
+            None:
+        """
+
+        self.date = datetime.fromtimestamp(unix_time)
+
     def tick(self: Self) -> tuple[list[bool], float, float]:
         """Tick the household, and return the device power states, total kWh draw and temperature.
 
