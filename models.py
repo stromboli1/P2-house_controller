@@ -475,10 +475,11 @@ class House():
         # Return the celsius gained
         return celsius_gain
 
-    def update_time(delta_time: float) -> None:
+    def update_time(self: Self, delta_time: float) -> None:
         """Update the time.
 
         Args:
+            self (Self): self
             delta_time (float): Change in seconds
 
         Returns:
