@@ -338,9 +338,6 @@ class House():
         'e': (189, 5200)
     }
 
-    # Variable to hold the date of the last tick
-    last_tick: Optional[datetime] = None
-
     def __init__(
             self: Self,
             energy_label: str,
@@ -385,6 +382,9 @@ class House():
 
         # Set the time
         self.date: datetime = datetime.fromtimestamp(start_time)
+
+        # Set last tick to start date
+        self.last_tick: datetime = self.date
 
         # Calculate the cubic meters of the house
         self.cubic_meters: float = self.sq_meters * self.height_meter
