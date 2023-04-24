@@ -198,7 +198,8 @@ class Heatpump(Appliance):
             allowed_cycles: int,
             cycle_time_range: tuple[int, int],
             heating_multiplier: float,
-            heating_fluctuation: float
+            heating_fluctuation: float,
+            max_temperatur: float
             ) -> None:
         """Initialize the heatpump.
 
@@ -522,10 +523,17 @@ class House():
         # Loop over all appliances
         for appliance in self.appliances:
             # Call tick on appliance
-            power_state, kwh_draw, heating_kwh = appliance.tick(
-                    self.last_tick,
-                    self.date
-                    )
+            if type(appliance) == Heatpump:
+                power_state, kwh_draw, heating_kwh = appliance.tick(
+                        self.last_tick,
+                        self.date,
+                        self.current_temperature
+                        )
+            else:
+                power_state, kwh_draw, heating_kwh = appliance.tick(
+                        self.last_tick,
+                        self.date
+                        )
 
             # Add the values to the variables
             power_states.append(power_state)
