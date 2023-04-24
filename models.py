@@ -475,6 +475,18 @@ class House():
         # Return the celsius gained
         return celsius_gain
 
+    def update_time(delta_time: float) -> None:
+        """Update the time.
+
+        Args:
+            delta_time (float): Change in seconds
+
+        Returns:
+            None:
+        """
+
+        self.date += timedelta(seconds=delta_time)
+
     def tick(self: Self) -> tuple[list[bool], float, float]:
         """Tick the household, and return the device power states, total kWh draw and temperature.
 
