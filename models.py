@@ -32,7 +32,8 @@ class Appliance():
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int]
+            cycle_time_range: tuple[int, int],
+            continuos: bool
             ) -> None:
         """Initialize the appliance.
 
@@ -56,6 +57,7 @@ class Appliance():
         self._state_coeffs: list[float] = state_coeffs
         self._allowed_cycles: int = allowed_cycles
         self._cycle_time_range: tuple[int, int] = cycle_time_range
+        self.continuos: bool = continuos
 
         # Make a randomness generator
         self._rng: Generator = default_rng()
@@ -94,16 +96,24 @@ class Appliance():
         if self._power_lock:
             self.power_state: bool = False
 
-    def _calculate_state(self: Self, date: datetime) -> None:
+    def _calculate_state(
+            self: Self,
+            date: datetime,
+            override: Optional[bool]
+            ) -> None:
         """Calculate the power state.
 
         Args:
             self (Self): self
             date (datetime): The date
+            override (Optional[bool]): Override of state
 
         Returns:
             None:
         """
+
+        if override == False:
+            self.power_state = False
 
         # Check if we are already in a cycle
         if self.cycle_end_time and date < self.cycle_end_time:
@@ -136,13 +146,19 @@ class Appliance():
                                 ))
                             )
 
-    def tick(self: Self, last_tick: datetime, date: datetime) -> tuple[bool, float, float]:
+    def tick(
+            self: Self,
+            last_tick: datetime,
+            date: datetime,
+            state_override: Optional[bool] = None
+            ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
         Args:
             self (Self): self
             last_tick (datetime): Date and time of the last tick
             date (datetime): The date and time
+            state_override (Optional[bool]): Override for the state
 
         Returns:
             tuple[bool, float, float]: power state, kWh draw and heating effect
@@ -160,7 +176,7 @@ class Appliance():
             self._reset_variables()
 
         # Calculate the power state
-        self._calculate_state(date)
+        self._calculate_state(date, override)
 
         kwh_draw: float = 0.0
         if self.power_state:
@@ -197,9 +213,11 @@ class Heatpump(Appliance):
             state_coeffs: list[float],
             allowed_cycles: int,
             cycle_time_range: tuple[int, int],
+            continuos: bool,
             heating_multiplier: float,
             heating_fluctuation: float,
-            max_temperatur: float
+            min_temperature: float,
+            max_temperature: float
             ) -> None:
         """Initialize the heatpump.
 
@@ -211,12 +229,20 @@ class Heatpump(Appliance):
             state_coeffs (list[float]): The coefficients of the state over time polynomial
             allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
             cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
+            continuos (bool): Does the appliance run continuosly?
+            heating_multiplier (float): How much more does it heat then it uses
+            heating_fluctuation (float): Fluctuation of heating in percent
+            min_temperature (float): The minimum temperature
+            max_temperature (float): The maximum temperature
 
         Returns:
             None:
         """
-        self.heating_multiplier = heating_multiplier
-        self.heating_fluctuation = heating_fluctuation
+
+        self._heating_multiplier = heating_multiplier
+        self._heating_fluctuation = heating_fluctuation
+        self._min_temperature = min_temperature
+        self._max_temperature = max_temperature
 
         super().__init__(
                 power_usage,
@@ -224,13 +250,15 @@ class Heatpump(Appliance):
                 controllable,
                 state_coeffs,
                 allowed_cycles,
-                cycle_time_range
+                cycle_time_range,
+                continuos
                 )
 
     def tick(
             self: Self,
             last_tick: datetime,
-            date: datetime
+            date: datetime,
+            temperature: float
             ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
@@ -243,9 +271,15 @@ class Heatpump(Appliance):
             tuple[bool, float, float]: power state, kWh draw and heating effect
         """
 
-        _, kwh_draw, _ = super().tick(last_tick, date)
+        override: Optional[bool] = None
 
-        heating_effect = kwh_draw * self.heating_multiplier * \
+        # If the temperature is already at or above the max temperature, end the cycle early
+        if temperature >= self._max_temperature:
+            override: Optional[bool] = False
+
+        _, kwh_draw, _ = super().tick(last_tick, date, override)
+
+        heating_effect = kwh_draw * self._heating_multiplier * \
                 (1 + self._rng.uniform(
                     -self.heating_fluctuation,
                     self.heating_fluctuation
@@ -264,7 +298,8 @@ class Dryer(Appliance):
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int]
+            cycle_time_range: tuple[int, int],
+            continuos: bool
             ) -> None:
         """Initialize the dryer.
 
@@ -276,6 +311,7 @@ class Dryer(Appliance):
             state_coeffs (list[float]): The coefficients of the state over time polynomial
             allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
             cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
+            continuos (bool): Does the appliance run continuosly?
 
         Returns:
             None:
@@ -287,7 +323,8 @@ class Dryer(Appliance):
                 controllable,
                 state_coeffs,
                 allowed_cycles,
-                cycle_time_range
+                cycle_time_range,
+                continuos
                 )
 
 
@@ -300,7 +337,8 @@ class Oven(Appliance):
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int]
+            cycle_time_range: tuple[int, int],
+            continuos: bool
             ) -> None:
         """Initialize the oven.
 
@@ -312,6 +350,7 @@ class Oven(Appliance):
             state_coeffs (list[float]): The coefficients of the state over time polynomial
             allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
             cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
+            continuos (bool): Does the appliance run continuosly?
 
         Returns:
             None:
@@ -323,7 +362,8 @@ class Oven(Appliance):
                 controllable,
                 state_coeffs,
                 allowed_cycles,
-                cycle_time_range
+                cycle_time_range,
+                continuos
                 )
 
 
