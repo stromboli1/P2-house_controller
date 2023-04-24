@@ -119,7 +119,7 @@ class Appliance():
 
         # Check if it should be turned on
         # Make sure that it has more allowed cycles
-        if self.allowed_cycles <= self.cycle_count and not self.allowed_cycles <= 0:
+        if self._allowed_cycles <= self.cycle_count and not self._allowed_cycles <= 0:
             return
 
         # Sample a probability polynomial
@@ -130,10 +130,10 @@ class Appliance():
             self.cycle_count += 1
             self.cycle_end_time: datetime = date + \
                     timedelta(
-                            minutes=self._rng.integers(
+                            minutes=int(self._rng.integers(
                                 self._cycle_time_range[0],
                                 self._cycle_time_range[1]
-                                )
+                                ))
                             )
 
     def tick(self: Self, last_tick: datetime, date: datetime) -> tuple[bool, float, float]:
@@ -214,6 +214,8 @@ class Heatpump(Appliance):
         Returns:
             None:
         """
+        self.heating_multiplier = heating_multiplier
+        self.heating_fluctuation = heating_fluctuation
 
         super().__init__(
                 power_usage,
@@ -412,7 +414,7 @@ class House():
             float: celsius
         """
 
-        return kj*(1.005 * self._kg_air)
+        return kj/(1.005 * self._kg_air)
 
     def _dates2minutes(self: Self, date1: datetime, date2: datetime) -> float:
         """Convert to dates to minute difference.
@@ -512,7 +514,7 @@ class House():
         """
 
         # Calculate the amount of minutes since last tick
-        minutes: float = self._dates2minutes(self.last_tick, self.date)
+        minutes: float = self._dates2minutes(self.date, self.last_tick)
 
         # Variables to hold the data
         power_states: list[bool] = []
@@ -520,7 +522,7 @@ class House():
         total_heating_kwh: float = 0.0
 
         # Loop over all appliances
-        for appliance in self.appliances:
+        for appliance in self._appliances:
             # Call tick on appliance
             power_state, kwh_draw, heating_kwh = appliance.tick(
                     self.last_tick,
