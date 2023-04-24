@@ -33,7 +33,6 @@ class Appliance():
             state_coeffs: list[float],
             allowed_cycles: int,
             cycle_time_range: tuple[int, int],
-            continuos: bool
             ) -> None:
         """Initialize the appliance.
 
@@ -57,7 +56,6 @@ class Appliance():
         self._state_coeffs: list[float] = state_coeffs
         self._allowed_cycles: int = allowed_cycles
         self._cycle_time_range: tuple[int, int] = cycle_time_range
-        self.continuos: bool = continuos
 
         # Make a randomness generator
         self._rng: Generator = default_rng()
@@ -99,7 +97,6 @@ class Appliance():
     def _calculate_state(
             self: Self,
             date: datetime,
-            override: Optional[bool]
             ) -> None:
         """Calculate the power state.
 
@@ -111,9 +108,6 @@ class Appliance():
         Returns:
             None:
         """
-
-        if override == False:
-            self.power_state = False
 
         # Check if we are already in a cycle
         if self.cycle_end_time and date < self.cycle_end_time:
@@ -150,7 +144,6 @@ class Appliance():
             self: Self,
             last_tick: datetime,
             date: datetime,
-            state_override: Optional[bool] = None
             ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
@@ -176,7 +169,7 @@ class Appliance():
             self._reset_variables()
 
         # Calculate the power state
-        self._calculate_state(date, override)
+        self._calculate_state(date)
 
         kwh_draw: float = 0.0
         if self.power_state:
@@ -210,10 +203,6 @@ class Heatpump(Appliance):
             power_usage: float,
             power_fluctuation: float,
             controllable: bool,
-            state_coeffs: list[float],
-            allowed_cycles: int,
-            cycle_time_range: tuple[int, int],
-            continuos: bool,
             heating_multiplier: float,
             heating_fluctuation: float,
             min_temperature: float,
@@ -248,11 +237,22 @@ class Heatpump(Appliance):
                 power_usage,
                 power_fluctuation,
                 controllable,
-                state_coeffs,
-                allowed_cycles,
-                cycle_time_range,
-                continuos
+                [0],
+                0,
+                [0, 0]
                 )
+
+    def _calculate_state(self: Self, date: datetime) -> None:
+        if self._power_lock:
+            return
+
+        if self._temperature >= self._max_temperature:
+            self.power_state = False
+            return
+
+        if self._temperature <= self._min_temperature:
+            self.power_state = True
+            return
 
     def tick(
             self: Self,
@@ -271,14 +271,13 @@ class Heatpump(Appliance):
             tuple[bool, float, float]: power state, kWh draw and heating effect
         """
 
-        override: Optional[bool] = None
+        # Set the temperature (workaround till I get a better idea)
+        self._temperature = temperature
 
-        # If the temperature is already at or above the max temperature, end the cycle early
-        if temperature >= self._max_temperature:
-            override: Optional[bool] = False
-
+        # Call the super tick
         _, kwh_draw, _ = super().tick(last_tick, date, override)
 
+        # Calculate heating effect
         heating_effect = kwh_draw * self._heating_multiplier * \
                 (1 + self._rng.uniform(
                     -self.heating_fluctuation,
@@ -299,7 +298,6 @@ class Dryer(Appliance):
             state_coeffs: list[float],
             allowed_cycles: int,
             cycle_time_range: tuple[int, int],
-            continuos: bool
             ) -> None:
         """Initialize the dryer.
 
@@ -324,7 +322,6 @@ class Dryer(Appliance):
                 state_coeffs,
                 allowed_cycles,
                 cycle_time_range,
-                continuos
                 )
 
 
@@ -338,7 +335,6 @@ class Oven(Appliance):
             state_coeffs: list[float],
             allowed_cycles: int,
             cycle_time_range: tuple[int, int],
-            continuos: bool
             ) -> None:
         """Initialize the oven.
 
@@ -363,7 +359,6 @@ class Oven(Appliance):
                 state_coeffs,
                 allowed_cycles,
                 cycle_time_range,
-                continuos
                 )
 
 
