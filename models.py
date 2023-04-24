@@ -113,29 +113,28 @@ class Appliance():
 
             self.power_state: bool = True
             return
-        else:
-            # Turn it off if it isnt in a cycle
-            self.power_state: bool = False
+
+        # Turn it off if it isnt in a cycle
+        self.power_state: bool = False
 
         # Check if it should be turned on
-        if not self.power_state:
-            # Make sure that it has more allowed cycles
-            if self.cycle_count < self.allowed_cycles and not self.allowed_cycles <= 0:
-                return
+        # Make sure that it has more allowed cycles
+        if self.allowed_cycles <= self.cycle_count and not self.allowed_cycles <= 0:
+            return
 
-            # Sample a probability polynomial
-            sample_point: float = date.hour + (date.minute/60)
+        # Sample a probability polynomial
+        sample_point: float = date.hour + (date.minute/60)
 
-            if self._rng.uniform() <= polyval(sample_point, self._state_coeffs):
-                self.power_state: bool = True
-                self.cycle_count += 1
-                self.cycle_end_time: datetime = date + \
-                        timedelta(
-                                minutes=self._rng.integers(
-                                    self._cycle_time_range[0],
-                                    self._cycle_time_range[1]
-                                    )
+        if self._rng.uniform() <= polyval(sample_point, self._state_coeffs):
+            self.power_state: bool = True
+            self.cycle_count += 1
+            self.cycle_end_time: datetime = date + \
+                    timedelta(
+                            minutes=self._rng.integers(
+                                self._cycle_time_range[0],
+                                self._cycle_time_range[1]
                                 )
+                            )
 
     def tick(self: Self, last_tick: datetime, date: datetime) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
@@ -225,7 +224,11 @@ class Heatpump(Appliance):
                 cycle_time_range
                 )
 
-    def tick(self: Self, last_tick: datetime, date: datetime) -> tuple[bool, float, float]:
+    def tick(
+            self: Self,
+            last_tick: datetime,
+            date: datetime
+            ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
         Args:
@@ -493,7 +496,10 @@ class House():
         # Loop over all appliances
         for appliance in self.appliances:
             # Call tick on appliance
-            power_state, kwh_draw, heating_kwh = appliance.tick(self.last_tick, self.date)
+            power_state, kwh_draw, heating_kwh = appliance.tick(
+                    self.last_tick,
+                    self.date
+                    )
 
             # Add the values to the variables
             power_states.append(power_state)
@@ -512,7 +518,11 @@ class House():
 
         # Add the background power to the total power draw
         total_kwh_draw += sum(polyval(sample_points, self._bg_power_coeffs)) * \
-                (1 + self._rng.uniform(-self._bg_power_fluctuation, self._bg_power_fluctuation))
+                (1 + self._rng.uniform(
+                    -self._bg_power_fluctuation,
+                    self._bg_power_fluctuation
+                    )
+                )
 
         # Update the last_tick date
         self.last_tick: datetime = self.date
