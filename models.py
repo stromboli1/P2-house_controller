@@ -20,7 +20,7 @@ class Appliance():
     _power_lock: bool = False
 
     # Datetime object to track the start of a cycle
-    cycle_end_time: Optional[datetime] = None
+    cycle_end_time: Optional[int] = None
 
     # Keep track of how many times the appliance has been cycled
     cycle_count: int = 0
@@ -60,20 +60,6 @@ class Appliance():
         # Make a randomness generator
         self._rng: Generator = default_rng()
 
-    def _dates2minutes(self: Self, date1: datetime, date2: datetime) -> float:
-        """Convert to dates to minute difference.
-
-        Args:
-            self (Self): self
-            date1 (datetime): First date
-            date2 (datetime): Second date
-
-        Returns:
-            float: minutes
-        """
-
-        return (date1 - date2).total_seconds()/60.0
-
     def power_locker(self: Self, lock: bool) -> None:
         """Lock (or unlock) the power on the appliance.
 
@@ -94,23 +80,19 @@ class Appliance():
         if self._power_lock:
             self.power_state: bool = False
 
-    def _calculate_state(
-            self: Self,
-            date: datetime,
-            ) -> None:
+    def _calculate_state(self: Self, time: int) -> None:
         """Calculate the power state.
 
         Args:
             self (Self): self
-            date (datetime): The date
-            override (Optional[bool]): Override of state
+            time (int): The unix time
 
         Returns:
             None:
         """
 
         # Check if we are already in a cycle
-        if self.cycle_end_time and date < self.cycle_end_time:
+        if self.cycle_end_time and time < self.cycle_end_time:
             # Check if it is locked, dont do anything
             if self._power_lock:
                 return
@@ -127,49 +109,47 @@ class Appliance():
             return
 
         # Sample a probability polynomial
-        sample_point: float = date.hour + (date.minute/60)
+        sample_point: float = time / 3600
 
         if self._rng.uniform() <= polyval(sample_point, self._state_coeffs):
             self.power_state: bool = True
             self.cycle_count += 1
-            self.cycle_end_time: datetime = date + \
-                    timedelta(
-                            minutes=int(self._rng.integers(
-                                self._cycle_time_range[0],
-                                self._cycle_time_range[1]
-                                ))
-                            )
+            self.cycle_end_time: int = time + \
+                    (self._rng.integers(
+                            self._cycle_time_range[0],
+                            self._cycle_time_range[1]
+                            ) * 60
+                    )
 
     def tick(
             self: Self,
-            last_tick: datetime,
-            date: datetime,
+            last_tick: int,
+            time: int,
             ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
         Args:
             self (Self): self
-            last_tick (datetime): Date and time of the last tick
-            date (datetime): The date and time
-            state_override (Optional[bool]): Override for the state
+            last_tick (datetime): Unix timestamp of last tick
+            date (datetime): Unix timestamp
 
         Returns:
             tuple[bool, float, float]: power state, kWh draw and heating effect
         """
 
         # Calculate the minutes between ticks
-        minutes = self._dates2minutes(date, last_tick)
+        minutes = (time - last_tick)/60.0
 
         # Make sure that we dont have a past date
         if minutes < 0:
             raise RuntimeError("No time travel allowed")
 
         # Check if a new day has begun
-        if last_tick.date() < date.date():
+        if last_tick // 86400 < time // 86400:
             self._reset_variables()
 
         # Calculate the power state
-        self._calculate_state(date)
+        self._calculate_state(time)
 
         kwh_draw: float = 0.0
         if self.power_state:
@@ -215,10 +195,6 @@ class Heatpump(Appliance):
             power_usage (float): The power usage of the device in kW
             power_fluctuation (float): The amount of power can fluctuate in percent
             controllable (bool): Is the appliance controllable
-            state_coeffs (list[float]): The coefficients of the state over time polynomial
-            allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
-            cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
-            continuos (bool): Does the appliance run continuosly?
             heating_multiplier (float): How much more does it heat then it uses
             heating_fluctuation (float): Fluctuation of heating in percent
             min_temperature (float): The minimum temperature
@@ -256,16 +232,16 @@ class Heatpump(Appliance):
 
     def tick(
             self: Self,
-            last_tick: datetime,
-            date: datetime,
+            last_tick: int,
+            time: int,
             temperature: float
             ) -> tuple[bool, float, float]:
         """Tick the appliance and get the power state, kwh draw and heating effect
 
         Args:
             self (Self): self
-            last_tick (datetime): Date and time of the last tick
-            date (datetime): The date and time
+            last_tick (int): Unix timestamp of last tick
+            time (int): Unix timestamp
 
         Returns:
             tuple[bool, float, float]: power state, kWh draw and heating effect
@@ -275,7 +251,7 @@ class Heatpump(Appliance):
         self._temperature = temperature
 
         # Call the super tick
-        _, kwh_draw, _ = super().tick(last_tick, date)
+        _, kwh_draw, _ = super().tick(last_tick, time)
 
         # Calculate heating effect
         heating_effect = kwh_draw * self._heating_multiplier * \
@@ -309,7 +285,6 @@ class Dryer(Appliance):
             state_coeffs (list[float]): The coefficients of the state over time polynomial
             allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
             cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
-            continuos (bool): Does the appliance run continuosly?
 
         Returns:
             None:
@@ -346,7 +321,6 @@ class Oven(Appliance):
             state_coeffs (list[float]): The coefficients of the state over time polynomial
             allowed_cycles (int): How many times are the appliance allowed to have a cycle in a day (0 and less is infinite)
             cycle_time_range (tuple[int, int]): Range to pick cycle time from (in minutes)
-            continuos (bool): Does the appliance run continuosly?
 
         Returns:
             None:
@@ -419,10 +393,10 @@ class House():
         self.current_temperature: float = start_temperature
 
         # Set the time
-        self.date: datetime = datetime.fromtimestamp(start_time)
+        self.time: int = start_time
 
         # Set last tick to start date
-        self.last_tick: datetime = self.date
+        self.last_tick: int = self.time
 
         # Calculate the cubic meters of the house
         self.cubic_meters: float = self.sq_meters * self.height_meter
@@ -440,10 +414,11 @@ class House():
         # Get limit values
         self.limit_value: tuple[int, int] = self.LIMIT_VALUES.get(self.energy_label)
 
-    def _kj2celsius(self, kj: float) -> float:
+    def _kj2celsius(self: Self, kj: float) -> float:
         """Convert kj to celsius.
 
         Args:
+            self (Self): self
             kj (float): kj
 
         Returns:
@@ -451,20 +426,6 @@ class House():
         """
 
         return kj/(1.005 * self._kg_air)
-
-    def _dates2minutes(self: Self, date1: datetime, date2: datetime) -> float:
-        """Convert to dates to minute difference.
-
-        Args:
-            self (Self): self
-            date1 (datetime): First date
-            date2 (datetime): Second date
-
-        Returns:
-            float: minutes
-        """
-
-        return (date1 - date2).total_seconds()/60.0
 
     def _calculate_heat_loss(self: Self, minutes: float) -> float:
         """Calculate the total heatloss in the given minute interval.
@@ -513,18 +474,18 @@ class House():
         # Return the celsius gained
         return celsius_gain
 
-    def update_time(self: Self, delta_time: float) -> None:
+    def update_time(self: Self, delta_time: int) -> None:
         """Update the time.
 
         Args:
             self (Self): self
-            delta_time (float): Change in seconds
+            delta_time (int): Change in seconds
 
         Returns:
             None:
         """
 
-        self.date += timedelta(seconds=delta_time)
+        self.time += delta_time
 
     def set_time(self: Self, unix_time: int) -> None:
         """Set the time on the house.
@@ -537,20 +498,20 @@ class House():
             None:
         """
 
-        self.date = datetime.fromtimestamp(unix_time)
+        self.time = unix_time
 
-    def tick(self: Self) -> tuple[list[bool], float, float]:
-        """Tick the household, and return the device power states, total kWh draw and temperature.
+    def tick(self: Self) -> tuple[list[bool], float, float, int]:
+        """Tick the household, and return the device power states, total kWh draw, temperature and unix time.
 
         Args:
             self (Self): self
 
         Returns:
-            tuple[list[bool], float, float]: Device states, total kWh draw and temperature
+            tuple[list[bool], float, float, int]: Device states, total kWh draw, temperature and unix time
         """
 
         # Calculate the amount of minutes since last tick
-        minutes: float = self._dates2minutes(self.date, self.last_tick)
+        minutes: float = (self.time - self.last_tick)/60.0
 
         # Variables to hold the data
         power_states: list[bool] = []
@@ -563,13 +524,13 @@ class House():
             if type(appliance) == Heatpump:
                 power_state, kwh_draw, heating_kwh = appliance.tick(
                         self.last_tick,
-                        self.date,
+                        self.time,
                         self.current_temperature
                         )
             else:
                 power_state, kwh_draw, heating_kwh = appliance.tick(
                         self.last_tick,
-                        self.date
+                        self.time
                         )
 
             # Add the values to the variables
@@ -582,13 +543,39 @@ class House():
             self._calculate_heat_loss(minutes)
 
         # Get sample points for background power
-        p1 = self.last_tick.timestamp()
-        p2 = self.date.timestamp()
-        sample_points: list[float] = linspace(
-                (p1 / 3600) % 24,
-                (p2 / 3600) % 24,
-                int(minutes*60)
-                )
+
+        sample_points: list[float] = []
+
+        # some edge case that 24/0 hours
+        last_tick_clamped = (self.last_tick // 86400) * 86400
+        time_clamped = (self.time // 86400) * 86400
+
+        if last_tick_clamped < time_clamped:
+            # We have sample points for two days
+            sample_points.extend(
+                    linspace(
+                        (self.last_tick / 3600) % 24,
+                        ((time_clamped-1) / 3600) % 24,
+                        int(time_clamped-1 - self.last_tick)
+                        )
+                    )
+
+            sample_points.extend(
+                    linspace(
+                        (self.time_clamped / 3600) % 24,
+                        (self.time / 3600) % 24,
+                        int(self.time - time_clamped)
+                        )
+                    )
+
+        else:
+            sample_points.extend(
+                    linspace(
+                        (self.last_tick / 3600) % 24,
+                        (self.time / 3600) % 24,
+                        int(minutes*60)
+                        )
+                    )
 
         # Add the background power to the total power draw
         bg_kwh_draw = sum(polyval(sample_points, self._bg_power_coeffs)) / \
@@ -602,7 +589,7 @@ class House():
         total_kwh_draw += bg_kwh_draw
 
         # Update the last_tick date
-        self.last_tick: datetime = self.date
+        self.last_tick: int = self.time
 
-        return power_states, total_kwh_draw, self.current_temperature
+        return power_states, total_kwh_draw, self.current_temperature, self.time
 
