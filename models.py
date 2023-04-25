@@ -1,6 +1,5 @@
 # Import modules
 from typing import Self, Type, Optional, Union
-from datetime import datetime, timedelta
 from numpy.polynomial.polynomial import polyval
 from numpy.random import default_rng, Generator
 from numpy import linspace
