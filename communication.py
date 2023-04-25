@@ -41,7 +41,7 @@ def transmit_data(
 
     datasock.sendto(packet, (target_ip, port))
 
-def listen_for_startstop(port: int) -> Optional[bool]:
+def listen_for_startstop() -> Optional[bool]:
 
     try:
         sig, _ = startstopsock.recvfrom(128)
