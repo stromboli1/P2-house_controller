@@ -12,5 +12,5 @@ def recv_broadcast() -> int:
     Returns:
         int: signal
     """
-    sig, _ = sock.recvfrom(256)[0]
-    return sig
+    sig, _ = sock.recvfrom(256)
+    return sig[0]
