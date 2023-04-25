@@ -582,9 +582,11 @@ class House():
             self._calculate_heat_loss(minutes)
 
         # Get sample points for background power
+        p1 = self.last_tick.timestamp()
+        p2 = self.date.timestamp()
         sample_points: list[float] = linspace(
-                (self.last_tick.timestamp() / 1440) % 86400,
-                (self.date.timestamp() / 1440) % 86400,
+                (p1 / 3600) % 24,
+                (p2 / 3600) % 24,
                 int(minutes*60)
                 )
 

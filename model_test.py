@@ -6,7 +6,7 @@ on_list = []
 average = []
 x_list = []
 minutes = 1440
-days = 100
+days = 1
 
 oven_coeff = [5.11972665e-04, -7.03402445e-04,  7.68026707e-04, -3.66363583e-04, 8.96781866e-05, -1.14300653e-05, 7.10339539e-07, -1.23448103e-08, -8.17581893e-10, 4.38334209e-11, -6.15768582e-13]
 
@@ -25,7 +25,7 @@ dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, 
 heatpump = mod.Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, min_temperature=20.5, max_temperature=21.4)
 
 # Creating house with appliances
-house = mod.House('d', 150, 2.8, 22, 82620, 212,[dryer, oven, heatpump], bg_coeff, 0.01)
+house = mod.House('d', 150, 2.8, 22, 1682380800, 212,[], bg_coeff, 0.01)
 
 for minut in range(minutes):
     average.append(minut)
