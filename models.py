@@ -584,16 +584,20 @@ class House():
         # Get sample points for background power
         sample_points: list[float] = linspace(
                 self.last_tick.hour + (self.last_tick.minute/60),
-                self.date.hour + (self.date.minute/60)
+                self.date.hour + (self.date.minute/60),
+                minutes*60
                 )
 
         # Add the background power to the total power draw
-        total_kwh_draw += sum(polyval(sample_points, self._bg_power_coeffs)) * \
+        bg_kwh_draw = sum(polyval(sample_points, self._bg_power_coeffs)) / \
+                (minutes*60) * \
                 (1 + self._rng.uniform(
                     -self._bg_power_fluctuation,
                     self._bg_power_fluctuation
                     )
                 )
+
+        total_kwh_draw += bg_kwh_draw
 
         # Update the last_tick date
         self.last_tick: datetime = self.date
