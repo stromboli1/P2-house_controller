@@ -585,7 +585,7 @@ class House():
         sample_points: list[float] = linspace(
                 self.last_tick.hour + (self.last_tick.minute/60),
                 self.date.hour + (self.date.minute/60),
-                minutes*60
+                int(minutes*60)
                 )
 
         # Add the background power to the total power draw
