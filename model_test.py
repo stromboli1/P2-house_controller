@@ -11,13 +11,13 @@ heatpump_coeff = [ 3.78897407e-01,  6.42680175e-01, -8.59110854e-01,  4.11481727
 
 bg_coeff = [ 2.99668164e-01, -2.71379376e-02,  5.62845605e-02, -3.89511608e-02,1.25851865e-02, -2.19645119e-03,  2.24538898e-04, -1.38772202e-05,5.11234640e-07, -1.03491589e-08,  8.87078335e-11]
 
-oven = mod.Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(1800, 7200))
+oven = mod.Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
 
 
-dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(3600, 7200))
+dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
 
-heatpump = mod.Heatpump(1.5, 0.2, True, state_coeffs=heatpump_coeff, allowed_cycles=144, cycle_time_range=(60,61), heating_multiplier=3, heating_fluctuation=0.2)
+heatpump = mod.Heatpump(1.5, 0.2, True, state_coeffs=heatpump_coeff, allowed_cycles=0, cycle_time_range=(0,1), heating_multiplier=3, heating_fluctuation=0.2)
 
 house = mod.House('d', 150, 2.8, 21, 0, 212, [oven, dryer, heatpump], bg_coeff, 0.05)
 
@@ -27,10 +27,12 @@ average = []
 for i in range(1440):
     average.append(i)
 
-print(house.tick())
+for i in range(100):
+    house.update_time(60)
+    print(house.tick())
 
 
-
+"""
 for i in range(1440):
     sum = 0
     for n in range(1000):
@@ -44,3 +46,4 @@ for i in range(1440):
 
 plt.plot(x_list, average)
 plt.show()
+"""
