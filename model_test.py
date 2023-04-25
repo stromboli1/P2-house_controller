@@ -1,68 +1,50 @@
 import models as mod
 import matplotlib.pyplot as plt
 
-oven_coeff = [3.23654726e-02, -8.87464977e-02, 1.10875118e-01, -5.55039379e-02, 1.41481147e-02, -2.00354900e-03, 1.63395561e-04, -7.60766518e-06,
- 1.87551879e-07, -1.89766897e-09]
-
-dryer_coeff = [ 1.79708907e-02,  3.55758062e-02, -5.97575512e-02,  3.11564699e-02,
--7.99325968e-03,  1.19446290e-03, -1.10903593e-04,  6.46081210e-06,
--2.28247678e-07,  4.44239437e-09, -3.63712544e-11]
-
-heatpump_coeff = [ 3.78897407e-01,  6.42680175e-01, -8.59110854e-01,  4.11481727e-01, -9.78468135e-02,  1.34481405e-02, -1.14484299e-03,  6.15032763e-05, -2.03241753e-06,  3.77414792e-08, -3.01481897e-10]
-
-bg_coeff = [ 2.99668164e-01, -2.71379376e-02,  5.62845605e-02, -3.89511608e-02,1.25851865e-02, -2.19645119e-03,  2.24538898e-04, -1.38772202e-05,5.11234640e-07, -1.03491589e-08,  8.87078335e-11]
-
-oven = mod.Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
-
-
-dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
-
-
-heatpump = mod.Heatpump(1.5, 0.2, True, heating_multiplier=3, heating_fluctuation=0.2, min_temperature=20.5, max_temperature=21.4)
-
-house = mod.House('d', 150, 2.8, 21, 0, 212, [oven, dryer, heatpump], bg_coeff, 0.05)
-
-comp_list = []
+consumption_list = []
 on_list = []
 average = []
+x_list = []
+minutes = 1440
+days = 100
 
-for i in range(1440):
-    average.append(i)
+oven_coeff = [5.11972665e-04, -7.03402445e-04,  7.68026707e-04, -3.66363583e-04, 8.96781866e-05, -1.14300653e-05, 7.10339539e-07, -1.23448103e-08, -8.17581893e-10, 4.38334209e-11, -6.15768582e-13]
+
+dryer_coeff = [2.99514846e-04, 5.92930103e-04, -9.95959187e-04, 5.19274499e-04, -1.33220995e-04, 1.99077151e-05, -1.84839322e-06, 1.07680202e-07, -3.80412797e-09, 7.40399062e-11, -6.06187573e-13]
 
 
-for n in range(100):
+bg_coeff = [ 2.99994599e-01, -5.51791329e-04, -4.13148994e-02,  2.10030766e-02, -4.10493904e-03,  4.10768972e-04, -2.29920196e-05,  7.26545140e-07, -1.20913754e-08,  8.21833884e-11]
+
+# Creating oven appliance for house
+oven = mod.Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
+
+# Creating dryer appliance for house
+dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
+
+# Creating heatpump appliance for house
+heatpump = mod.Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, min_temperature=20.5, max_temperature=21.4)
+
+# Creating house with appliances
+house = mod.House('d', 150, 2.8, 22, 82620, 212,[dryer, oven, heatpump], bg_coeff, 0.01)
+
+for minut in range(minutes):
+    average.append(minut)
+    x_list.append(minut)
+
+for n in range(days):
     day_list = []
-    for i in range(1440):
-        house.update_time(60)
-        state, draw, temp = house.tick()
-        day_list.append(state)
-    on_list.append(day_list)
-
-for n in range(100):
-    print(on_list[n][1379])
-
-"""
-for n in range(100):
-    day_list = []
-    for i in range(1440):
+    for i in range(minutes):
         house.update_time(60)
         state, draw, temp = house.tick()
         day_list.append(draw)
-    comp_list.append(day_list)
+    consumption_list.append(day_list)
 
 
-
-for i in range(1440):
+for i in range(minutes):
     sum = 0
-    for n in range(100):
-        sum += comp_list[n][i]
-    average[i] = sum/100
-
-x_list = []
-
-for i in range(1440):
-    x_list.append(i)
+    for n in range(1):
+        sum += consumption_list[n][i]
+    average[i] = sum/days
 
 plt.plot(x_list, average)
 plt.show()
-"""
