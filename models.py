@@ -562,7 +562,7 @@ class House():
 
             sample_points.extend(
                     linspace(
-                        (self.time_clamped / 3600) % 24,
+                        (time_clamped / 3600) % 24,
                         (self.time / 3600) % 24,
                         int(self.time - time_clamped)
                         )

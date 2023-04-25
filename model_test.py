@@ -25,7 +25,7 @@ dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, 
 heatpump = mod.Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, min_temperature=20.5, max_temperature=21.4)
 
 # Creating house with appliances
-house = mod.House('d', 150, 2.8, 22, 1682380800, 212,[], bg_coeff, 0.01)
+house = mod.House('d', 150, 2.8, 22, 0, 212,[], bg_coeff, 0.01)
 
 for minut in range(minutes):
     average.append(minut)
@@ -35,7 +35,7 @@ for n in range(days):
     day_list = []
     for i in range(minutes):
         house.update_time(60)
-        state, draw, temp = house.tick()
+        state, draw, temp, time = house.tick()
         day_list.append(draw)
     consumption_list.append(day_list)
 
