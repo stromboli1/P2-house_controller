@@ -275,13 +275,13 @@ class Heatpump(Appliance):
         self._temperature = temperature
 
         # Call the super tick
-        _, kwh_draw, _ = super().tick(last_tick, date, override)
+        _, kwh_draw, _ = super().tick(last_tick, date)
 
         # Calculate heating effect
         heating_effect = kwh_draw * self._heating_multiplier * \
                 (1 + self._rng.uniform(
-                    -self.heating_fluctuation,
-                    self.heating_fluctuation
+                    -self._heating_fluctuation,
+                    self._heating_fluctuation
                     )
                 )
 
