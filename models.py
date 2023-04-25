@@ -583,8 +583,8 @@ class House():
 
         # Get sample points for background power
         sample_points: list[float] = linspace(
-                self.last_tick.hour + (self.last_tick.minute/60),
-                self.date.hour + (self.date.minute/60),
+                (self.last_tick.timestamp() / 1440) % 86400,
+                (self.date.timestamp() / 1440) % 86400,
                 int(minutes*60)
                 )
 
