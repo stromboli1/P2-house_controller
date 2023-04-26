@@ -217,7 +217,7 @@ class Heatpump(Appliance):
                 [0, 0]
                 )
 
-    def _calculate_state(self: Self, date: datetime) -> None:
+    def _calculate_state(self: Self, time: int) -> None:
         if self._power_lock:
             return
 
