@@ -158,7 +158,7 @@ class Appliance():
                         -self._power_fluctuation,
                         self._power_fluctuation
                         )
-                    ) * (minutes/60)
+                    ) #* (minutes/60)
 
         return self.power_state, kwh_draw, 0.0
 
@@ -359,7 +359,8 @@ class House():
             active_days: int,
             appliances: list[Type[Appliance]],
             bg_power_coeffs: list[float],
-            bg_power_fluctuation: float
+            bg_power_fluctuation: float,
+            random_heat_loss_chance: float
             ) -> None:
         """Initialize Household.
 
@@ -387,6 +388,7 @@ class House():
         self._appliances: list[Type[Appliance]] = appliances
         self._bg_power_coeffs: list[float] = bg_power_coeffs
         self._bg_power_fluctuation: float = bg_power_fluctuation
+        self.random_heat_loss_chance: float = random_heat_loss_chance
 
         # Set temperature
         self.current_temperature: float = start_temperature
@@ -453,7 +455,7 @@ class House():
         # Return the celsius scaled to the minutes
         return celsius_minute_loss * minutes
 
-    def _calculate_heat_gain(self: Self, kwh: float) -> float:
+    def _calculate_heat_gain(self: Self, kw: float, minutes: int) -> float:
         """Calculate the gained celsius by the given kwh.
 
         Args:
@@ -465,7 +467,7 @@ class House():
         """
 
         # Convert kwh to kj
-        kj_gain: float = kwh*3600
+        kj_gain: float = kw * (minutes*60)
 
         # Calculate the gain in celsius
         celsius_gain: float = self._kj2celsius(kj_gain)
@@ -538,8 +540,11 @@ class House():
             total_heating_kwh += heating_kwh
 
         # Calculate the new temperature
-        self.current_temperature += self._calculate_heat_gain(total_heating_kwh) - \
+        self.current_temperature += self._calculate_heat_gain(total_heating_kwh, minutes) - \
             self._calculate_heat_loss(minutes)
+        # Add random heat loss from open doors ect.
+        if self._rng.random() < self.random_heat_loss_chance:
+            self.current_temperature -= self._rng.random()
 
         # Get sample points for background power
 
