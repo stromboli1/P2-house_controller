@@ -9,6 +9,7 @@ from communication_utils import decompile_packet, datatrans_packetinator
 
 # GLOBAL VARS
 STARTSTOPPORT: int = 6969
+CONTROLPROTOCOLPORT: int = 42069
 
 # Global sockets (CANNOT be recovered if they crash)
 datasock: socket.socket = socket.socket(
@@ -21,6 +22,12 @@ startstopsock: socket.socket = socket.socket(
         socket.SOCK_DGRAM
         )
 startstopsock.bind(('', STARTSTOPPORT))
+
+controlprotocolsock: socket.socket = socket.socket(
+        socket.AF_INET,
+        socket.SOCK_STREAM
+        )
+controlprotocolsock.bind(('', CONTROLPROTOCOLPORT))
 
 def transmit_data(
         target_ip: str,
@@ -49,7 +56,13 @@ def listen_for_startstop() -> Optional[bool]:
     except:
         return None
 
-
+def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
+    try:
+        csock, _ = controlprotocolsock.accept()
+        packet = csock.recv(1024)
+        return decompile_packet(packet)
+    except:
+        return None
 
 
 
