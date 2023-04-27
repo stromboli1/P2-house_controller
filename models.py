@@ -158,7 +158,7 @@ class Appliance():
                         -self._power_fluctuation,
                         self._power_fluctuation
                         )
-                    ) #* (minutes/60)
+                    )
 
         return self.power_state, kwh_draw, 0.0
 
@@ -346,7 +346,8 @@ class House():
         'b': (69, 2200),
         'c': (109, 3200),
         'd': (149, 4200),
-        'e': (189, 5200)
+        'e': (189, 5200),
+        'f': (239, 6500)
     }
 
     def __init__(
