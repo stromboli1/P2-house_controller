@@ -25,7 +25,7 @@ class Appliance():
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int],
+            cycle_time_range: tuple[int, int]
             ) -> None:
         """Initialize the appliance.
 
@@ -117,9 +117,9 @@ class Appliance():
     def tick(
             self: Self,
             last_tick: int,
-            time: int,
+            time: int
             ) -> tuple[bool, float, float]:
-        """Tick the appliance and get the power state, kW draw and heating effect
+        """Tick the appliance and get the power state, kW draw and heating energy
 
         Args:
             self (Self): self
@@ -127,7 +127,7 @@ class Appliance():
             time (int): Unix timestamp
 
         Returns:
-            tuple[bool, float, float]: power state, kW draw and heating effect
+            tuple[bool, float, float]: power state, kW draw and heating energy
         """
 
         # Check if a new day has begun
@@ -213,7 +213,7 @@ class Heatpump(Appliance):
             time: int,
             temperature: float
             ) -> tuple[bool, float, float]:
-        """Tick the appliance and get the power state, kwh draw and heating effect
+        """Tick the appliance and get the power state, kwh draw and heating energy
 
         Args:
             self (Self): self
@@ -221,7 +221,7 @@ class Heatpump(Appliance):
             time (int): Unix timestamp
 
         Returns:
-            tuple[bool, float, float]: power state, kWh draw and heating effect
+            tuple[bool, float, float]: power state, kWh draw and heating energy
         """
 
         # Set the temperature (workaround till I get a better idea)
@@ -230,8 +230,8 @@ class Heatpump(Appliance):
         # Call the super tick
         _, kw_draw, _ = super().tick(last_tick, time)
 
-        # Calculate heating effect
-        heating_effect = kw_draw * (time - last_tick) * \
+        # Calculate heating energy
+        heating_energy = kw_draw * (time - last_tick) * \
                 self._heating_multiplier * \
                 (1 + self._rng.uniform(
                     -self._heating_fluctuation,
@@ -239,7 +239,7 @@ class Heatpump(Appliance):
                     )
                 )
 
-        return self.power_state, kw_draw, heating_effect
+        return self.power_state, kw_draw, heating_energy
 
 
 class Dryer(Appliance):
@@ -251,7 +251,7 @@ class Dryer(Appliance):
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int],
+            cycle_time_range: tuple[int, int]
             ) -> None:
         """Initialize the dryer.
 
@@ -287,7 +287,7 @@ class Oven(Appliance):
             controllable: bool,
             state_coeffs: list[float],
             allowed_cycles: int,
-            cycle_time_range: tuple[int, int],
+            cycle_time_range: tuple[int, int]
             ) -> None:
         """Initialize the oven.
 
@@ -367,7 +367,7 @@ class House():
         self._appliances: list[Type[Appliance]] = appliances
         self._bg_power_coeffs: list[float] = bg_power_coeffs
         self._bg_power_fluctuation: float = bg_power_fluctuation
-        self.random_heat_loss_chance: float = random_heat_loss_chance
+        self._random_heat_loss_chance: float = random_heat_loss_chance
 
         # Set temperature
         self.current_temperature: float = start_temperature
@@ -519,7 +519,7 @@ class House():
         self.current_temperature += self._calculate_heat_gain(total_heating_kwh, minutes) - \
             self._calculate_heat_loss(minutes)
         # Add random heat loss from open doors ect.
-        if self._rng.random() < self.random_heat_loss_chance:
+        if self._rng.uniform() < self._random_heat_loss_chance:
             self.current_temperature -= self._rng.random()
 
         # Get sample points for background power
