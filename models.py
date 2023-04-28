@@ -119,23 +119,16 @@ class Appliance():
             last_tick: int,
             time: int,
             ) -> tuple[bool, float, float]:
-        """Tick the appliance and get the power state, kwh draw and heating effect
+        """Tick the appliance and get the power state, kW draw and heating effect
 
         Args:
             self (Self): self
             last_tick (datetime): Unix timestamp of last tick
-            date (datetime): Unix timestamp
+            time (int): Unix timestamp
 
         Returns:
-            tuple[bool, float, float]: power state, kWh draw and heating effect
+            tuple[bool, float, float]: power state, kW draw and heating effect
         """
-
-        # Calculate the minutes between ticks
-        minutes = (time - last_tick)/60.0
-
-        # Make sure that we dont have a past date
-        if minutes < 0:
-            raise RuntimeError("No time travel allowed")
 
         # Check if a new day has begun
         if last_tick // 86400 < time // 86400:
@@ -144,17 +137,17 @@ class Appliance():
         # Calculate the power state
         self._calculate_state(time)
 
-        kwh_draw: float = 0.0
+        kw_draw: float = 0.0
         if self.power_state:
-            # Calculate the power draw in kWh
-            kwh_draw: float = self._power_usage * \
+            # Calculate the power draw in kW
+            kw_draw: float = self._power_usage * \
                     (1 + self._rng.uniform(
                         -self._power_fluctuation,
                         self._power_fluctuation
                         )
-                    ) #* (minutes/60)
+                    )
 
-        return self.power_state, kwh_draw, 0.0
+        return self.power_state, kw_draw, 0.0
 
     def _reset_variables(self: Self) -> None:
         """Reset variables keeping track of limits.
@@ -235,17 +228,18 @@ class Heatpump(Appliance):
         self._temperature = temperature
 
         # Call the super tick
-        _, kwh_draw, _ = super().tick(last_tick, time)
+        _, kw_draw, _ = super().tick(last_tick, time)
 
         # Calculate heating effect
-        heating_effect = kwh_draw * self._heating_multiplier * \
+        heating_effect = kw_draw * (time - last_tick) * \
+                self._heating_multiplier * \
                 (1 + self._rng.uniform(
                     -self._heating_fluctuation,
                     self._heating_fluctuation
                     )
                 )
 
-        return self.power_state, kwh_draw, heating_effect
+        return self.power_state, kw_draw, heating_effect
 
 
 class Dryer(Appliance):
@@ -440,22 +434,19 @@ class House():
         # Return the celsius scaled to the minutes
         return celsius_minute_loss * minutes
 
-    def _calculate_heat_gain(self: Self, kw: float, minutes: int) -> float:
+    def _calculate_heat_gain(self: Self, kj: float, minutes: int) -> float:
         """Calculate the gained celsius by the given kwh.
 
         Args:
             self (Self): self
-            kwh (float): The added kwh to the system
+            kwh (float): The added kj to the system
 
         Returns:
             float: Gain in celsius
         """
 
-        # Convert kwh to kj
-        kj_gain: float = kw * (minutes*60)
-
         # Calculate the gain in celsius
-        celsius_gain: float = self._kj2celsius(kj_gain)
+        celsius_gain: float = self._kj2celsius(kj)
 
         # Return the celsius gained
         return celsius_gain
