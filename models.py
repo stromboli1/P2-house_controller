@@ -184,8 +184,7 @@ class Heatpump(Appliance):
             controllable: bool,
             heating_multiplier: float,
             heating_fluctuation: float,
-            min_temperature: float,
-            max_temperature: float
+            target_temperature: float
             ) -> None:
         """Initialize the heatpump.
 
@@ -196,8 +195,7 @@ class Heatpump(Appliance):
             controllable (bool): Is the appliance controllable
             heating_multiplier (float): How much more does it heat then it uses
             heating_fluctuation (float): Fluctuation of heating in percent
-            min_temperature (float): The minimum temperature
-            max_temperature (float): The maximum temperature
+            target_temperature (float): The target temperature
 
         Returns:
             None:
@@ -205,8 +203,7 @@ class Heatpump(Appliance):
 
         self._heating_multiplier = heating_multiplier
         self._heating_fluctuation = heating_fluctuation
-        self._min_temperature = min_temperature
-        self._max_temperature = max_temperature
+        self._target_temperature = target_temperature
 
         super().__init__(
                 power_usage,
@@ -221,13 +218,7 @@ class Heatpump(Appliance):
         if self._power_lock:
             return
 
-        if self._temperature >= self._max_temperature:
-            self.power_state = False
-            return
-
-        if self._temperature <= self._min_temperature:
-            self.power_state = True
-            return
+        self.power_state = self._temperature < self._target_temperature
 
     def tick(
             self: Self,

@@ -25,7 +25,7 @@ oven = mod.Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, sta
 dryer = mod.Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
 # Creating heatpump appliance for house
-heatpump = mod.Heatpump(1.5, 0, True, heating_multiplier=1, heating_fluctuation=0.05, min_temperature=20.5, max_temperature=21.4)
+heatpump = mod.Heatpump(1.5, 0, True, heating_multiplier=1, heating_fluctuation=0.05, target_temperature=20.5)
 
 # Creating house with appliances
 house_1 = mod.House('e', 300, 3, 21, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
