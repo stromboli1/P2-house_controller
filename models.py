@@ -4,12 +4,6 @@ from numpy.polynomial.polynomial import polyval
 from numpy.random import default_rng, Generator
 from numpy import linspace
 
-# TODO:
-#
-# * Add some way for the time to run along
-#   * Per tick or Continuos?
-# * Calculate polynomials for all appliances
-#   * In a config file or over the control protocol
 
 # Base Model of an Appliance
 class Appliance():
