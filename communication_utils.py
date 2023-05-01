@@ -1,5 +1,6 @@
 # Import Modules
 import struct
+import json
 
 # Load the param oracle
 with open('param_oracle.json', 'r') as fp:
