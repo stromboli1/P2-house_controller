@@ -2,10 +2,10 @@
 from typing import Optional
 import socket
 import json
-from concurrent.futures import ThreadPoolExecutor
 
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
+from models import House, Heatpump, Oven, Dryer
 
 # GLOBAL VARS
 STARTSTOPPORT: int = 6969
@@ -68,5 +68,3 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
 
 
 
-
-# TODO: Threading and other stupid shit
