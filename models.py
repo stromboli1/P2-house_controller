@@ -519,8 +519,8 @@ class House():
         self.current_temperature += self._calculate_heat_gain(total_heating_kwh, minutes) - \
             self._calculate_heat_loss(minutes)
         # Add random heat loss from open doors ect.
-        if self._rng.uniform() < self._random_heat_loss_chance:
-            self.current_temperature -= self._rng.random()
+        if self._rng.uniform(0, 1) < self._random_heat_loss_chance:
+            self.current_temperature -= self._rng.uniform(0, 1)
 
         # Get sample points for background power
 
