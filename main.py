@@ -98,6 +98,8 @@ class CommandListener(Thread):
     def run(self) -> None:
         while True:
             packet = receive_controlpacket()
+            if packet == None:
+                continue
             lock_flag = not packet[0] & 4 > 0
             heatpump.power_locker(lock_flag)
 
