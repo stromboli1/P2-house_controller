@@ -94,7 +94,17 @@ class HouseRunner(Thread):
             print(devicelist, devices, powerusage, temperature, time)
             transmit_data("10.10.0.1", 42070, devices, powerusage, temperature, time)
 
+class CommandListener(Thread):
+    def run(self) -> None:
+        while True:
+            packet = receive_controlpacket()
+            lock_flag = not packet[0] & 4 > 0
+            heatpump.power_locker(lock_flag)
+
+
 houserunner = HouseRunner()
 houserunner.start()
+
+control_protocol_thread = Thread
 
 # TODO: Implement the code so it works
