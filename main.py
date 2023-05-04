@@ -105,6 +105,7 @@ class CommandListener(Thread):
 houserunner = HouseRunner()
 houserunner.start()
 
-control_protocol_thread = Thread
+commandlistener = CommandListener()
+commandlistener.start()
 
 # TODO: Implement the code so it works
