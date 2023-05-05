@@ -191,6 +191,10 @@ class Heatpump(Appliance):
         self._heating_multiplier = heating_multiplier
         self._heating_fluctuation = heating_fluctuation
         self._target_temperature = target_temperature
+        self._last_heating = power_usage * 0.03
+        self._last_temperature = 0
+        self._stabilizer_state = False
+        self._stabilizer_heating = 0
 
         super().__init__(
                 power_usage,
@@ -206,6 +210,29 @@ class Heatpump(Appliance):
             return
 
         self.power_state = self._temperature < self._target_temperature
+
+    def temperature_stabilization(self: Self, temperature: float) -> None:
+        """Function enabling heat pump to stabilize the temperature.
+
+        Args:
+            self (Self): Self
+            temperature (float): The current temperature of the house.
+        """
+
+        if (self._target_temperature*0.998) < self._temperature and \
+                self._temperature < (self._target_temperature*1.02) and \
+                self._last_temperature < self._target_temperature*1.01:
+
+            self._stabilizer_state = True
+
+            if self._last_temperature < temperature:
+                self._stabilizer_heating = 0.965 * self._last_heating
+
+            elif self._last_temperature > temperature:
+                self._stabilizer_heating = 1.035 * self._last_heating
+
+        else:
+            self._stabilizer_state = False
 
     def tick(
             self: Self,
@@ -229,6 +256,15 @@ class Heatpump(Appliance):
 
         # Call the super tick
         _, kw_draw, _ = super().tick(last_tick, time)
+
+        # Use of temperature stabilization
+        if self._temperature > \
+                self._target_temperature * 0.99:
+            self.temperature_stabilization(self._temperature)
+            if self._stabilizer_state == True:
+                kw_draw = self._stabilizer_heating
+                self.power_state = True
+                self._last_heating = kw_draw
 
         # Calculate heating energy
         heating_energy = kw_draw * (time - last_tick) * \
@@ -354,6 +390,8 @@ class House():
             appliances (list[Type[Appliance]]): The appliances of the house
             bg_power_coeffs (list[float]): Coefficients for background power usage
             bg_power_fluctuation (float): Fluctuation in background power usage (in percent)
+            random_heat_loss_chance (float): Decimal percentage chance of \
+            random loss of heat, due to external influences
 
         Returns:
             None:
@@ -504,6 +542,7 @@ class House():
                         self.time,
                         self.current_temperature
                         )
+                appliance._last_temperature = self.current_temperature
             else:
                 power_state, kwh_draw, heating_kwh = appliance.tick(
                         self.last_tick,
