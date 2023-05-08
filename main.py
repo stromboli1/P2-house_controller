@@ -24,7 +24,6 @@ startstopsock: socket.socket = socket.socket(
         socket.SOCK_DGRAM
         )
 startstopsock.bind(('', STARTSTOPPORT))
-startstopsock.listen()
 
 controlprotocolsock: socket.socket = socket.socket(
         socket.AF_INET,
