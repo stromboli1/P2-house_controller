@@ -62,6 +62,7 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     try:
         csock, _ = controlprotocolsock.accept()
         packet = csock.recv(1024)
+        csock.close()
         return decompile_packet(packet)
     except:
         return None
