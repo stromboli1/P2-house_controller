@@ -24,12 +24,14 @@ startstopsock: socket.socket = socket.socket(
         socket.SOCK_DGRAM
         )
 startstopsock.bind(('', STARTSTOPPORT))
+startstopsock.listen()
 
 controlprotocolsock: socket.socket = socket.socket(
         socket.AF_INET,
         socket.SOCK_STREAM
         )
 controlprotocolsock.bind(('', CONTROLPROTOCOLPORT))
+controlprotocolsock.listen()
 
 def transmit_data(
         target_ip: str,
