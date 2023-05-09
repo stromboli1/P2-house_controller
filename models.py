@@ -457,8 +457,8 @@ class House():
         """
 
         # Calculate the yearly loss in kwh
-        kwh_year_loss: float = self.limit_value[0] + \
-                (self.limit_value[1]/self.sq_meters)
+        kwh_year_loss: float = (self.limit_value[0] + \
+                (self.limit_value[1]/self.sq_meters)*self.sq_meters)
 
         # Convert it to minutely
         kwh_minute_loss: float = kwh_year_loss/(self._active_days*24*60)
