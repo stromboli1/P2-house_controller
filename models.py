@@ -261,7 +261,7 @@ class Heatpump(Appliance):
         if self._temperature > \
                 self._target_temperature * 0.99:
             self.temperature_stabilization(self._temperature)
-            if self._stabilizer_state == True:
+            if self._stabilizer_state == True and not self._power_lock:
                 kw_draw = self._stabilizer_heating
                 self.power_state = True
                 self._last_heating = kw_draw
