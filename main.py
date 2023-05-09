@@ -82,7 +82,7 @@ oven = Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_c
 dryer = Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
 # Creating heatpump appliance for house
-heatpump = Heatpump(1.5, 0, True, heating_multiplier=1, heating_fluctuation=0.05, target_temperature=20.5)
+heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=20.5)
 
 house = House('e', 300, 3, 18, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
 
