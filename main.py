@@ -65,7 +65,8 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
         packet = csock.recv(1024)
         csock.close()
         return decompile_packet(packet)
-    except:
+    except Exception as e:
+        print(e)
         return None
 
 # Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
