@@ -240,7 +240,7 @@ class Heatpump(Appliance):
             time: int,
             temperature: float
             ) -> tuple[bool, float, float]:
-        """Tick the appliance and get the power state, kwh draw and heating energy
+        """Tick the appliance and get the power state, kw draw and heating energy (in kj)
 
         Args:
             self (Self): self
@@ -248,7 +248,7 @@ class Heatpump(Appliance):
             time (int): Unix timestamp
 
         Returns:
-            tuple[bool, float, float]: power state, kWh draw and heating energy
+            tuple[bool, float, float]: power state, kW draw and heating energy
         """
 
         # Set the temperature (workaround till I get a better idea)
@@ -472,12 +472,12 @@ class House():
         # Return the celsius scaled to the minutes
         return celsius_minute_loss * minutes
 
-    def _calculate_heat_gain(self: Self, kj: float, minutes: int) -> float:
-        """Calculate the gained celsius by the given kwh.
+    def _calculate_heat_gain(self: Self, kj: float) -> float:
+        """Calculate the gained celsius by the given kj.
 
         Args:
             self (Self): self
-            kwh (float): The added kj to the system
+            kj (float): The added kj to the system
 
         Returns:
             float: Gain in celsius
@@ -516,13 +516,13 @@ class House():
         self.time = unix_time
 
     def tick(self: Self) -> tuple[list[bool], float, float, int]:
-        """Tick the household, and return the device power states, total kWh draw, temperature and unix time.
+        """Tick the household, and return the device power states, total kW draw, temperature and unix time.
 
         Args:
             self (Self): self
 
         Returns:
-            tuple[list[bool], float, float, int]: Device states, total kWh draw, temperature and unix time
+            tuple[list[bool], float, float, int]: Device states, total kW draw, temperature and unix time
         """
 
         # Calculate the amount of minutes since last tick
@@ -530,32 +530,32 @@ class House():
 
         # Variables to hold the data
         power_states: list[bool] = []
-        total_kwh_draw: float = 0.0
-        total_heating_kwh: float = 0.0
+        total_kw_draw: float = 0.0
+        total_heating_kj: float = 0.0
 
         # Loop over all appliances
         for appliance in self._appliances:
             # Call tick on appliance
             if type(appliance) == Heatpump:
-                power_state, kwh_draw, heating_kwh = appliance.tick(
+                power_state, kw_draw, heating_kj = appliance.tick(
                         self.last_tick,
                         self.time,
                         self.current_temperature
                         )
                 appliance._last_temperature = self.current_temperature
             else:
-                power_state, kwh_draw, heating_kwh = appliance.tick(
+                power_state, kw_draw, heating_kj = appliance.tick(
                         self.last_tick,
                         self.time
                         )
 
             # Add the values to the variables
             power_states.append(power_state)
-            total_kwh_draw += kwh_draw
-            total_heating_kwh += heating_kwh
+            total_kw_draw += kw_draw
+            total_heating_kj += heating_kj
 
         # Calculate the new temperature
-        self.current_temperature += self._calculate_heat_gain(total_heating_kwh, minutes) - \
+        self.current_temperature += self._calculate_heat_gain(total_heating_kj) - \
             self._calculate_heat_loss(minutes)
         # Add random heat loss from open doors ect.
         if self._rng.uniform(0, 1) < self._random_heat_loss_chance:
@@ -597,7 +597,7 @@ class House():
                     )
 
         # Add the background power to the total power draw
-        bg_kwh_draw = sum(polyval(sample_points, self._bg_power_coeffs)) / \
+        bg_kw_draw = sum(polyval(sample_points, self._bg_power_coeffs)) / \
                 (minutes*60) * \
                 (1 + self._rng.uniform(
                     -self._bg_power_fluctuation,
@@ -605,10 +605,10 @@ class House():
                     )
                 )
 
-        total_kwh_draw += bg_kwh_draw
+        total_kw_draw += bg_kw_draw
 
         # Update the last_tick date
         self.last_tick: int = self.time
 
-        return power_states, total_kwh_draw, self.current_temperature, self.time
+        return power_states, total_kw_draw, self.current_temperature, self.time
 
