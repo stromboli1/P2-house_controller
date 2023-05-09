@@ -21,7 +21,7 @@ def decompile_packet(packet: bytes) -> tuple[int, int, dict, int]:
     flags = packet[0]
     clk = None
     devices = None
-    paramlist = None
+    paramdict = None
 
     # Decompile clock sync
     if flags & 1 > 0:
