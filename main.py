@@ -100,10 +100,13 @@ class CommandListener(Thread):
     def run(self) -> None:
         while True:
             packet = receive_controlpacket()
+            print(packet)
             if packet == None:
                 continue
             lock_flag = not packet[0] & 4 > 0
+            print(lock_flag)
             heatpump.power_locker(lock_flag)
+            print(heatpump._power_lock)
 
 
 houserunner = HouseRunner()
