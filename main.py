@@ -84,7 +84,7 @@ dryer = Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, stat
 # Creating heatpump appliance for house
 heatpump = Heatpump(1.5, 0, True, heating_multiplier=1, heating_fluctuation=0.05, target_temperature=20.5)
 
-house = House('e', 300, 3, 21, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
+house = House('e', 300, 3, 18, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
     def run(self) -> None:
