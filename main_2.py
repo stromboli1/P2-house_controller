@@ -8,10 +8,11 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
-from start_receiver import receive_start
+from start_receiver import receive_start, receive_stop
 
 # GLOBAL VARS
 CONTROLPROTOCOLPORT: int = 42069
+STOPTHREADS = False
 
 # Global sockets (CANNOT be recovered if they crash)
 datasock: socket.socket = socket.socket(
@@ -45,6 +46,7 @@ def transmit_data(
 
     datasock.sendto(packet, (target_ip, port))
 
+
 def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     try:
         csock, _ = controlprotocolsock.accept()
@@ -75,6 +77,7 @@ house = House('c', 120, 3, 19.5, 0, 215,[heatpump,dryer, oven], bg_coeff, 0.01, 
 
 class HouseRunner(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             sleep(1)
             house.update_time(60)
@@ -84,9 +87,12 @@ class HouseRunner(Thread):
                 devices += 2**i if device else 0
             print(devicelist, devices, powerusage, temperature, time)
             transmit_data("10.10.0.1", 42070, devices, powerusage, temperature, time)
+            if STOPTHREADS:
+                break
 
 class CommandListener(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             packet = receive_controlpacket()
             print(packet)
@@ -96,7 +102,8 @@ class CommandListener(Thread):
             print(lock_flag)
             heatpump.power_locker(lock_flag)
             print(heatpump._power_lock)
-
+            if STOPTHREADS:
+                break
 
 start_received = False
 
@@ -109,4 +116,9 @@ else:
 
     commandlistener = CommandListener()
     commandlistener.start()
+
+while True:
+    if receive_stop():
+        STOPTHREADS = True
+
 # TODO: Implement the code so it works

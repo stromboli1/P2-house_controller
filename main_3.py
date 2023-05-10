@@ -8,10 +8,11 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
-from start_receiver import receive_start
+from start_receiver import receive_start, receive_stop
 
 # GLOBAL VARS
 CONTROLPROTOCOLPORT: int = 42069
+STOPTHREADS = False
 
 # Global sockets (CANNOT be recovered if they crash)
 datasock: socket.socket = socket.socket(
@@ -45,6 +46,7 @@ def transmit_data(
 
     datasock.sendto(packet, (target_ip, port))
 
+
 def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     try:
         csock, _ = controlprotocolsock.accept()
@@ -54,7 +56,6 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     except Exception as e:
         print(e)
         return None
-
 # Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
 oven_coeff = [5.11972665e-04, -7.03402445e-04,  7.68026707e-04, -3.66363583e-04, 8.96781866e-05, -1.14300653e-05, 7.10339539e-07, -1.23448103e-08, -8.17581893e-10, 4.38334209e-11, -6.15768582e-13]
 dryer_coeff = [2.99514846e-04, 5.92930103e-04, -9.95959187e-04, 5.19274499e-04, -1.33220995e-04, 1.99077151e-05, -1.84839322e-06, 1.07680202e-07, -3.80412797e-09, 7.40399062e-11, -6.06187573e-13]
@@ -75,6 +76,7 @@ house = House('d', 220, 3, 19.2, 0, 220,[heatpump,dryer, oven], bg_coeff, 0.01, 
 
 class HouseRunner(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             sleep(1)
             house.update_time(60)
@@ -84,9 +86,12 @@ class HouseRunner(Thread):
                 devices += 2**i if device else 0
             print(devicelist, devices, powerusage, temperature, time)
             transmit_data("10.10.0.1", 42070, devices, powerusage, temperature, time)
+            if STOPTHREADS:
+                break
 
 class CommandListener(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             packet = receive_controlpacket()
             print(packet)
@@ -96,7 +101,8 @@ class CommandListener(Thread):
             print(lock_flag)
             heatpump.power_locker(lock_flag)
             print(heatpump._power_lock)
-
+            if STOPTHREADS:
+                break
 
 start_received = False
 
@@ -109,5 +115,9 @@ else:
 
     commandlistener = CommandListener()
     commandlistener.start()
+
+while True:
+    if receive_stop():
+        STOPTHREADS = True
 
 # TODO: Implement the code so it works
