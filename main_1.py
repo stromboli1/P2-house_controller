@@ -8,9 +8,9 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
+from start_receiver import receive_start
 
 # GLOBAL VARS
-STARTSTOPPORT: int = 6969
 CONTROLPROTOCOLPORT: int = 42069
 
 # Global sockets (CANNOT be recovered if they crash)
@@ -18,12 +18,6 @@ datasock: socket.socket = socket.socket(
         socket.AF_INET,
         socket.SOCK_DGRAM
         )
-
-startstopsock: socket.socket = socket.socket(
-        socket.AF_INET,
-        socket.SOCK_DGRAM
-        )
-startstopsock.bind(('', STARTSTOPPORT))
 
 controlprotocolsock: socket.socket = socket.socket(
         socket.AF_INET,
@@ -51,13 +45,6 @@ def transmit_data(
 
     datasock.sendto(packet, (target_ip, port))
 
-def listen_for_startstop() -> Optional[bool]:
-
-    try:
-        sig, _ = startstopsock.recvfrom(128)
-        return sig[0] > 0
-    except:
-        return None
 
 def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     try:
@@ -112,10 +99,15 @@ class CommandListener(Thread):
             print(heatpump._power_lock)
 
 
-houserunner = HouseRunner()
-houserunner.start()
+start_received = False
 
-commandlistener = CommandListener()
-commandlistener.start()
+while not start_received:
+    if receive_start():
+        start_received = True
+else:
+    houserunner = HouseRunner()
+    houserunner.start()
 
+    commandlistener = CommandListener()
+    commandlistener.start()
 # TODO: Implement the code so it works
