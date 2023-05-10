@@ -120,5 +120,6 @@ stop_socket = start_start_socket()
 while True:
     if receive_start(stop_socket) and start_received:
         STOPTHREADS = True
+        break
 
 # TODO: Implement the code so it works
