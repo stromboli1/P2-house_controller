@@ -2,8 +2,9 @@
 import socket
 
 # create socket
-start_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-start_sock.bind(('', 6969))
+def start_start_socket():
+    start_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    start_sock.bind(('', 6969))
 
 def receive_start() -> bool:
     """function for starting data transfer.
