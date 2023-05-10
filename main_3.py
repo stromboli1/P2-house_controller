@@ -19,12 +19,6 @@ datasock: socket.socket = socket.socket(
         socket.SOCK_DGRAM
         )
 
-startstopsock: socket.socket = socket.socket(
-        socket.AF_INET,
-        socket.SOCK_DGRAM
-        )
-startstopsock.bind(('', STARTSTOPPORT))
-
 controlprotocolsock: socket.socket = socket.socket(
         socket.AF_INET,
         socket.SOCK_STREAM
