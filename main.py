@@ -75,6 +75,7 @@ house = House('e', 300, 3, 18, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.
 
 class HouseRunner(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             sleep(1)
             house.update_time(60)
@@ -89,6 +90,7 @@ class HouseRunner(Thread):
 
 class CommandListener(Thread):
     def run(self) -> None:
+        global STOPTHREADS
         while True:
             packet = receive_controlpacket()
             print(packet)
