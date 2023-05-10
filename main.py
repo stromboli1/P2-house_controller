@@ -11,7 +11,6 @@ from models import House, Heatpump, Oven, Dryer
 from start_receiver import receive_start
 
 # GLOBAL VARS
-STARTSTOPPORT: int = 6969
 CONTROLPROTOCOLPORT: int = 42069
 
 # Global sockets (CANNOT be recovered if they crash)
@@ -19,12 +18,6 @@ datasock: socket.socket = socket.socket(
         socket.AF_INET,
         socket.SOCK_DGRAM
         )
-
-startstopsock: socket.socket = socket.socket(
-        socket.AF_INET,
-        socket.SOCK_DGRAM
-        )
-startstopsock.bind(('', STARTSTOPPORT))
 
 controlprotocolsock: socket.socket = socket.socket(
         socket.AF_INET,
@@ -52,13 +45,6 @@ def transmit_data(
 
     datasock.sendto(packet, (target_ip, port))
 
-def listen_for_startstop() -> Optional[bool]:
-
-    try:
-        sig, _ = startstopsock.recvfrom(128)
-        return sig[0] > 0
-    except:
-        return None
 
 def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
     try:
