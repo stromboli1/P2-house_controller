@@ -8,6 +8,7 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
+from start_receiver import start_receiver
 
 # GLOBAL VARS
 STARTSTOPPORT: int = 6969
@@ -109,11 +110,16 @@ class CommandListener(Thread):
             heatpump.power_locker(lock_flag)
             print(heatpump._power_lock)
 
+start_received = False
 
-houserunner = HouseRunner()
-houserunner.start()
+while not start_received:
+    if start_receiver():
+        start_received = True
+else:
+    houserunner = HouseRunner()
+    houserunner.start()
 
-commandlistener = CommandListener()
-commandlistener.start()
+    commandlistener = CommandListener()
+    commandlistener.start()
 
 # TODO: Implement the code so it works
