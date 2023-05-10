@@ -104,10 +104,10 @@ class CommandListener(Thread):
                 break
 
 start_received = False
-start_start_socket()
+start_socket = start_start_socket()
 
 while not start_received:
-    if receive_start():
+    if receive_start(start_socket):
         start_received = True
 else:
     houserunner = HouseRunner()
@@ -116,9 +116,9 @@ else:
     commandlistener = CommandListener()
     commandlistener.start()
 
-start_start_socket()
+stop_socket = start_start_socket()
 while True:
-    if receive_start() and start_received:
+    if receive_start(stop_socket) and start_received:
         STOPTHREADS = True
 
 # TODO: Implement the code so it works
