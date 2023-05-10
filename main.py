@@ -8,7 +8,7 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
-from start_receiver import start_receiver
+from start_receiver import receive_start
 
 # GLOBAL VARS
 STARTSTOPPORT: int = 6969
@@ -113,7 +113,7 @@ class CommandListener(Thread):
 start_received = False
 
 while not start_received:
-    if start_receiver():
+    if receive_start():
         start_received = True
 else:
     houserunner = HouseRunner()
