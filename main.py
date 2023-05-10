@@ -8,7 +8,7 @@ from time import sleep
 # Own modules
 from communication_utils import decompile_packet, datatrans_packetinator
 from models import House, Heatpump, Oven, Dryer
-from start_receiver import receive_start, receive_stop
+from start_receiver import receive_start
 
 # GLOBAL VARS
 CONTROLPROTOCOLPORT: int = 42069
@@ -116,7 +116,7 @@ else:
     commandlistener.start()
 
 while True:
-    if receive_stop() and start_received:
+    if receive_start() and start_received:
         STOPTHREADS = True
 
 # TODO: Implement the code so it works
