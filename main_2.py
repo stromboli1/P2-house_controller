@@ -75,15 +75,17 @@ dryer_coeff = [2.99514846e-04, 5.92930103e-04, -9.95959187e-04, 5.19274499e-04, 
 bg_coeff = [ 2.99994599e-01, -5.51791329e-04, -4.13148994e-02,  2.10030766e-02, -4.10493904e-03,  4.10768972e-04, -2.29920196e-05,  7.26545140e-07, -1.20913754e-08,  8.21833884e-11]
 
 # Creating oven appliance for house
-oven = Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
+# Model: BFP6250M1 - Hot Air Option
+oven = Oven(power_usage=0.69, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
 
 # Creating dryer appliance for house
-dryer = Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
+# Model: WT43H07LDN
+dryer = Dryer(power_usage=1.96, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
 # Creating heatpump appliance for house
 heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=20.5)
 
-house = House('e', 300, 3, 18, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
+house = House('c', 120, 3, 19.5, 0, 215,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
     def run(self) -> None:
