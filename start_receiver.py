@@ -9,3 +9,8 @@ def receive_start() -> bool:
         return True
     return False
 
+def receive_stop() -> bool:
+    if not start_sock.recv(1024):
+        start_sock.close()
+        return True
+    return False
