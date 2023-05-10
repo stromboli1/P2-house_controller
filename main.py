@@ -116,7 +116,7 @@ else:
     commandlistener.start()
 
 while True:
-    if receive_stop():
+    if receive_stop() and start_received:
         STOPTHREADS = True
 
 # TODO: Implement the code so it works

@@ -30,7 +30,7 @@ def receive_stop() -> bool:
     """
 
     # returns true if stop signal is received
-    if not start_sock.recv(1024):
+    if start_sock.recv(1024):
         start_sock.close()
         return True
     return False
