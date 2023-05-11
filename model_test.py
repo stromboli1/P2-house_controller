@@ -1,5 +1,31 @@
 import models as mod
 import matplotlib.pyplot as plt
+import json
+
+with open('coefficients.json', 'r') as fd:
+    coefficients = json.load(fd)
+
+with open('house_settings.json', 'r') as fd:
+    house_setting = json.load(fd)
+
+with open('appliance_data.json', 'r') as fd:
+    appliance_data = json.load(fd)
+
+house_nr = input("House Nr: ")
+house_data = house_setting[house_nr]
+
+oven_model = house_data["oven"]
+oven_mode = house_data["mode"]
+oven_dict = appliance_data["oven"]
+oven_model_dict = oven_dict[oven_model]
+oven_data = oven_model_dict[oven_mode]
+
+dryer_dict = appliance_data["dryer"]
+dryer_data = dryer_dict[house_data["dryer"]]
+hp_target = house_data["target temperature"]
+hd = [house_data["energy rating"], house_data["size"], house_data["height"], \
+      house_data["start temperature"], house_data["start time"], \
+      house_data["active days"]]
 
 consumption_list = []
 on_list = []
