@@ -1,6 +1,7 @@
 # Import Modules
 import struct
 import json
+import socket
 
 # Load the param oracle
 with open('param_oracle.json', 'r') as fp:
@@ -110,4 +111,20 @@ def datatrans_packetinator(
     packet += time.to_bytes(4, 'big')
 
     return packet
+
+signal_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+signal_sock.bind(('', 6969))
+
+def receive_signal() -> bool:
+    """function for starting data transfer.
+
+    Args:
+
+    Returns:
+        bool:
+    """
+
+    # returns true if start signal is received
+    d, _ = signal_sock.recvfrom(128)
+    return d[0] > 0
 

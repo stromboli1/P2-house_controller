@@ -6,9 +6,8 @@ from threading import Thread
 from time import sleep
 
 # Own modules
-from communication_utils import decompile_packet, datatrans_packetinator
+from communication_utils import decompile_packet, datatrans_packetinator, receive_signal
 from models import House, Heatpump, Oven, Dryer
-from start_receiver import receive_start, start_start_socket
 
 # GLOBAL VARS
 CONTROLPROTOCOLPORT: int = 42069
@@ -104,10 +103,9 @@ class CommandListener(Thread):
                 break
 
 start_received = False
-start_socket = start_start_socket()
 
 while not start_received:
-    if receive_start(start_socket):
+    if receive_signal():
         start_received = True
 
 houserunner = HouseRunner()
@@ -116,9 +114,8 @@ houserunner.start()
 commandlistener = CommandListener()
 commandlistener.start()
 
-stop_socket = start_start_socket()
 while True:
-    if receive_start(stop_socket) and start_received:
+    if not receive_signal():
         STOPTHREADS = True
         break
 
