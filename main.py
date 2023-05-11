@@ -66,28 +66,35 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
         print(e)
         return None
 
+# Configure the settings depending of the house number
 house_nr = input("House Nr: ")
 house_data = house_setting[house_nr]
 
+# Configure the oven, according to the house number
 oven_model = house_data["oven"]
 oven_mode = house_data["mode"]
 oven_dict = appliance_data["oven"]
 oven_model_dict = oven_dict[oven_model]
 oven_data = oven_model_dict[oven_mode]
 
+# Configure the dryer, according to the house number
 dryer_dict = appliance_data["dryer"]
 dryer_data = dryer_dict[house_data["dryer"]]
+
+# Configure the heat pumps target temperature, according to house number
 hp_target = house_data["target temperature"]
 
+# Creating a list with all the settings for the house object.
 hd = [house_data["energy rating"], house_data["size"], house_data["height"], \
       house_data["start temperature"], house_data["start time"], \
       house_data["active days"]]
 
-
-# Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
+# Setting the different coefficients for the appliances.
 oven_coeff = coefficients["oven"]
 dryer_coeff = coefficients["dryer"]
 bg_coeff = coefficients["background"]
+
+# Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
 
 # Creating oven appliance for house
 oven = Oven(power_usage=oven_data, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
@@ -95,9 +102,10 @@ oven = Oven(power_usage=oven_data, power_fluctuation=0.02, controllable=False, s
 # Creating dryer appliance for house
 dryer = Dryer(power_usage=dryer_data, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
-# Creating heatpump appliance for house
+# Creating heat pump appliance for house
 heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=hp_target)
 
+# Creating the house object.
 house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5],[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
@@ -130,6 +138,8 @@ class CommandListener(Thread):
                 break
 
 start_received = False
+
+print("Ready for Area Controller")
 
 while not start_received:
     if receive_signal():
