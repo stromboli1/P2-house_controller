@@ -17,7 +17,7 @@ def receive_start(sock) -> bool:
     """
 
     # returns true if start signal is received
-    if sock.recv(1024):
+    if sock.recvfrom(1024):
         sock.close()
         return True
     return False
