@@ -17,6 +17,11 @@ STOPTHREADS = False
 with open('coefficients.json', 'r') as fd:
     coefficients = json.load(fd)
 
+with open('house_settings.json', 'r') as fd:
+    house_setting = json.load(fd)
+
+with open('appliance_data.json', 'r') as fd:
+    appliance_data = json.load(fd)
 
 # Global sockets (CANNOT be recovered if they crash)
 datasock: socket.socket = socket.socket(
@@ -61,21 +66,34 @@ def receive_controlpacket() -> Optional[tuple[int, int, dict, int]]:
         print(e)
         return None
 
+house_nr = input("House Number: ")
+
+house_data = house_setting[house_nr]
+oven_model = house_data["oven"]
+oven_mode = house_data["mode"]
+oven_data = appliance_data[oven_model[oven_mode]]
+dryer_data = appliance_data[house_data["dryer"]]
+hp_target = house_data["target temperature"]
+hd = [house_data["energy rating"], house_data["size"], house_data["height"], \
+      house_data["start temperature"], house_data["start time"], \
+      house_data["active days"]]
+
+
 # Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
 oven_coeff = coefficients["oven"]
 dryer_coeff = coefficients["dryer"]
 bg_coeff = coefficients["background"]
 
 # Creating oven appliance for house
-oven = Oven(power_usage=1.1, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
+oven = Oven(power_usage=oven_data, power_fluctuation=0.02, controllable=False, state_coeffs=oven_coeff, allowed_cycles=1, cycle_time_range=(30, 120))
 
 # Creating dryer appliance for house
-dryer = Dryer(power_usage=1.47, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
+dryer = Dryer(power_usage=dryer_data, power_fluctuation=0.02, controllable=False, state_coeffs=dryer_coeff, allowed_cycles=1, cycle_time_range=(60,120))
 
 # Creating heatpump appliance for house
-heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=20.5)
+heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=hp_target)
 
-house = House('e', 300, 3, 18, 0, 212,[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
+house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5],[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
     def run(self) -> None:
