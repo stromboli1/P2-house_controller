@@ -109,12 +109,12 @@ start_socket = start_start_socket()
 while not start_received:
     if receive_start(start_socket):
         start_received = True
-else:
-    houserunner = HouseRunner()
-    houserunner.start()
 
-    commandlistener = CommandListener()
-    commandlistener.start()
+houserunner = HouseRunner()
+houserunner.start()
+
+commandlistener = CommandListener()
+commandlistener.start()
 
 stop_socket = start_start_socket()
 while True:
