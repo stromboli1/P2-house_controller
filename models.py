@@ -191,7 +191,7 @@ class Heatpump(Appliance):
         self._heating_multiplier = heating_multiplier
         self._heating_fluctuation = heating_fluctuation
         self._target_temperature = target_temperature
-        self._last_heating = power_usage * 0.03
+        self._last_heating = power_usage * 0.06
         self._last_temperature = 0
         self._stabilizer_state = False
         self._stabilizer_heating = 0
@@ -219,8 +219,8 @@ class Heatpump(Appliance):
             temperature (float): The current temperature of the house.
         """
 
-        if (self._target_temperature*0.998) < self._temperature and \
-                self._temperature < (self._target_temperature*1.02) and \
+        if (self._target_temperature*0.98) < self._temperature and \
+                self._temperature < (self._target_temperature*1.025) and \
                 self._last_temperature < self._target_temperature*1.01:
 
             self._stabilizer_state = True
@@ -259,7 +259,7 @@ class Heatpump(Appliance):
 
         # Use of temperature stabilization
         if self._temperature > \
-                self._target_temperature * 0.99:
+                self._target_temperature * 0.98:
             self.temperature_stabilization(self._temperature)
             if self._stabilizer_state == True and not self._power_lock:
                 kw_draw = self._stabilizer_heating
