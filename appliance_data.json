@@ -1,0 +1,41 @@
+{
+    "dryer": {
+        "T9DEN866C": 1.47,
+        "T6DBP821K": 4.81,
+        "TR724P84R": 1.93,
+        "WT43H07LDN": 1.96,
+        "TWD260WP": 1.55,
+        "GTP7023CEGW": 2.45,
+        "WTU876HASN": 1.97
+    },
+    "Oven": {
+        "DGC7350CLST": {
+            "Conventionel": 1.05,
+            "Hot Air": 0.71
+        },
+        "BES230011M": {
+            "Conventionel": 0.93,
+            "Hot Air": 0.81
+        },
+        "BBP6050B1": {
+            "Conventionel": 0.93,
+            "Hot Air": 0.69
+        },
+        "BFS9800M": {
+            "Conventionel": 0.99,
+            "Hot Air": 0.52
+        },
+        "BFP6250M1": {
+            "Conventionel": 1.09,
+            "Hot Air": 0.69
+        },
+        "BEB230010M": {
+            "Conventionel": 0.99,
+            "Hot Air": 0.81
+        },
+        "H 2265-1 BP": {
+            "Conventionel": 1.1,
+            "Hot Air": 0.71
+        }
+    }
+}
