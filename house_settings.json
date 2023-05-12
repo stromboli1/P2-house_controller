@@ -6,7 +6,7 @@
         "energy rating": "e",
         "size": 150,
         "height": 3,
-        "start temperature": 19,
+        "start temperature": 21.0,
         "start time": 57600,
         "active days": 212,
         "target temperature": 21.0
@@ -18,7 +18,7 @@
         "energy rating": "c",
         "size": 120,
         "height": 2.8,
-        "start temperature": 19.5,
+        "start temperature": 20.5,
         "start time": 57600,
         "active days": 215,
         "target temperature": 20.5
@@ -30,7 +30,7 @@
         "energy rating": "d",
         "size": 220,
         "height": 2.9,
-        "start temperature": 19.2,
+        "start temperature": 20.5,
         "start time": 57600,
         "active days": 220,
         "target temperature": 20.5
