@@ -106,7 +106,7 @@ dryer = Dryer(power_usage=dryer_data, power_fluctuation=0.02, controllable=False
 heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=hp_target)
 
 # Creating the house object.
-house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5],[heatpump,dryer, oven], bg_coeff, 0.01, 0.01)
+house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5], [heatpump, dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
     def run(self) -> None:
@@ -130,10 +130,11 @@ class CommandListener(Thread):
             print(packet)
             if packet == None:
                 continue
-            lock_flag = not packet[0] & 4 > 0
-            print(lock_flag)
-            heatpump.power_locker(lock_flag)
-            print(heatpump._power_lock)
+            if packet[0] & 8 > 0:
+                lock_flag = not packet[0] & 4 > 0
+                print(lock_flag)
+                heatpump.power_locker(lock_flag)
+                print(heatpump._power_lock)
 
             # Check if clk flag in packet is set
             if packet[0] & 1 > 0:
