@@ -134,6 +134,12 @@ class CommandListener(Thread):
             print(lock_flag)
             heatpump.power_locker(lock_flag)
             print(heatpump._power_lock)
+
+            # Check if clk flag in packet is set
+            if packet[0] & 1 > 0:
+                # Set house clk to recieved clk in the packet
+                house.set_time(packet[1])
+
             if STOPTHREADS:
                 break
 
