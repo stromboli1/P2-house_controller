@@ -131,7 +131,8 @@ class Appliance():
         """
 
         # Check if a new day has begun
-        if last_tick // 86400 < time // 86400:
+        if last_tick % 86400 > time % 86400:
+            print(f"{self}: New day, resetting variables...")
             self._reset_variables()
 
         # Calculate the power state
@@ -202,7 +203,7 @@ class Heatpump(Appliance):
                 controllable,
                 [0],
                 0,
-                [0, 0]
+                (0, 0)
                 )
 
     def _calculate_state(self: Self, time: int) -> None:
