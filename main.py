@@ -90,9 +90,15 @@ hd = [house_data["energy rating"], house_data["size"], house_data["height"], \
       house_data["active days"]]
 
 # Setting the different coefficients for the appliances.
+"""
 oven_coeff = coefficients["oven"]
 dryer_coeff = coefficients["dryer"]
 bg_coeff = coefficients["background"]
+"""
+
+oven_coeff = 1
+dryer_coeff = 1
+bg_coeff = 0.51
 
 # Make Appliances and House (TODO: Make the contants defined somewhere else, controlprotocol maybe?)
 
