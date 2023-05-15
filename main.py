@@ -138,8 +138,9 @@ class CommandListener(Thread):
 
             # Check if clk flag in packet is set
             if packet[0] & 1 > 0:
-                # Set house clk to recieved clk in the packet
-                house.set_time(packet[1])
+                if packet[1] > house.time:
+                    # Set house clk to recieved clk in the packet
+                    house.set_time(packet[1])
 
             if STOPTHREADS:
                 break
