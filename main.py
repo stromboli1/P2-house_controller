@@ -112,7 +112,7 @@ dryer = Dryer(power_usage=dryer_data, power_fluctuation=0.02, controllable=False
 heatpump = Heatpump(1.5, 0, True, heating_multiplier=3, heating_fluctuation=0.05, target_temperature=hp_target)
 
 # Creating the house object.
-house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5], [heatpump], bg_coeff, 0.01, 0.01)
+house = House(hd[0], hd[1], hd[2], hd[3], hd[4], hd[5], [heatpump, dryer, oven], bg_coeff, 0.01, 0.01)
 
 class HouseRunner(Thread):
     def run(self) -> None:
