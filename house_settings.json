@@ -6,10 +6,10 @@
         "energy rating": "a",
         "size": 150,
         "height": 3,
-        "start temperature": 21.0,
+        "start temperature": 20,
         "start time": 0,
         "active days": 212,
-        "target temperature": 21.0
+        "target temperature": 20
     },
     "2":{
         "oven": "BFP6250M1",
@@ -18,10 +18,10 @@
         "energy rating": "a",
         "size": 120,
         "height": 2.8,
-        "start temperature": 19,
+        "start temperature": 20,
         "start time": 0,
         "active days": 215,
-        "target temperature": 19
+        "target temperature": 20
     },
     "3":{
         "oven": "BES230011M",
@@ -30,9 +30,9 @@
         "energy rating": "a",
         "size": 220,
         "height": 2.9,
-        "start temperature": 20.5,
+        "start temperature": 20,
         "start time": 0,
         "active days": 220,
-        "target temperature": 20.5
+        "target temperature": 20
     }
 }
