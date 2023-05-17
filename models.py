@@ -192,7 +192,7 @@ class Heatpump(Appliance):
         self._heating_multiplier = heating_multiplier
         self._heating_fluctuation = heating_fluctuation
         self._target_temperature = target_temperature
-        self._last_heating = power_usage * 0.4
+        self._last_heating = power_usage * 0.2
         self._last_temperature = 0
         self._stabilizer_state = False
         self._stabilizer_heating = 0
