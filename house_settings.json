@@ -7,7 +7,7 @@
         "size": 150,
         "height": 3,
         "start temperature": 20,
-        "start time": 86000,
+        "start time": 0,
         "active days": 212,
         "target temperature": 20
     },
@@ -19,7 +19,7 @@
         "size": 120,
         "height": 2.8,
         "start temperature": 20,
-        "start time": 86000,
+        "start time": 0,
         "active days": 215,
         "target temperature": 20
     },
@@ -31,7 +31,7 @@
         "size": 220,
         "height": 2.9,
         "start temperature": 20,
-        "start time": 86000,
+        "start time": 0,
         "active days": 220,
         "target temperature": 20
     }
