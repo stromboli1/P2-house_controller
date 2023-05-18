@@ -6,10 +6,10 @@
         "energy rating": "d",
         "size": 150,
         "height": 3,
-        "start temperature": 20,
+        "start temperature": 21,
         "start time": 0,
         "active days": 212,
-        "target temperature": 20
+        "target temperature": 21
     },
     "2":{
         "oven": "BFP6250M1",
@@ -30,9 +30,9 @@
         "energy rating": "c",
         "size": 220,
         "height": 2.9,
-        "start temperature": 20,
+        "start temperature": 19,
         "start time": 0,
         "active days": 220,
-        "target temperature": 20
+        "target temperature": 19
     }
 }
